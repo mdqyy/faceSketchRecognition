@@ -12,7 +12,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "eigenTransformation.hpp"
 #include "utils.hpp"
-#include "markovInference.hpp"
 #include "lfda.hpp"
 
 using namespace cv;
