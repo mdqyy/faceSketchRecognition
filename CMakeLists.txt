@@ -4,6 +4,18 @@ set(name "facesketchrec")
 set(the_library "opencv_${name}")
 project(${the_library})
 
+if(UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
+    message("C++11 Activated")
+endif()
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    message("OpenMP Found") 
+endif()
+
 #set(OpenCV_DIR /home/marco/opencv-2.4.6.1)
 
 #---------------------------------
