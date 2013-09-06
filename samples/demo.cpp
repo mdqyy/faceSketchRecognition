@@ -87,11 +87,11 @@ int main(int argc, char** argv){
 		patcher(trainingSketches[i],16,8,sketchPatches);
 		trainingPhotosDesc.push_back(photoV);
 		trainingSketchesDesc.push_back(sketchV);
-		for(int j=0; j<photoPatches.size(); j++){
+		for(uint j=0; j<photoPatches.size(); j++){
 			vector<Mat> photoCol, sketchCol;
 			trainingPhotosDesc[i].push_back(photoCol);
 			trainingSketchesDesc[i].push_back(sketchCol);
-			for(int k=0; k<photoPatches[0].size(); k++){
+			for(uint k=0; k<photoPatches[0].size(); k++){
 				//cerr << i << " " << j << " " << k << endl;
 				Mat a, b, desc1, desc2;
 				calcSIFTDescriptors(photoPatches[j][k],a);
@@ -125,10 +125,10 @@ int main(int argc, char** argv){
 		vector<vector<Mat> > photoPatches;
 		patcher(testingPhotos[i],16,8,photoPatches);
 		testingPhotosDesc.push_back(photoV);
-		for(int j=0; j<photoPatches.size(); j++){
+		for(uint j=0; j<photoPatches.size(); j++){
 			vector<Mat> photoCol;
 			testingPhotosDesc[i].push_back(photoCol);
-			for(int k=0; k<photoPatches[0].size(); k++){
+			for(uint k=0; k<photoPatches[0].size(); k++){
 				//cerr << i << " " << j << " " << k << endl;
 				Mat a, b, desc1;
 				calcSIFTDescriptors(photoPatches[j][k],a);
@@ -147,10 +147,10 @@ int main(int argc, char** argv){
 		vector<vector<Mat> > sketchPatches;
 		patcher(testingSketches[i],16,8,sketchPatches);
 		testingSketchesDesc.push_back(sketchV);
-		for(int j=0; j<sketchPatches.size(); j++){
+		for(uint j=0; j<sketchPatches.size(); j++){
 			vector<Mat> sketchCol;
 			testingSketchesDesc[i].push_back(sketchCol);
-			for(int k=0; k<sketchPatches[0].size(); k++){
+			for(uint k=0; k<sketchPatches[0].size(); k++){
 				//cerr << i << " " << j << " " << k << endl;
 				Mat a, b, desc1;
 				calcSIFTDescriptors(sketchPatches[j][k],a);
@@ -185,19 +185,19 @@ int main(int argc, char** argv){
 	vector<Mat> _dataTrainingCols, _dataTestingPhotosCols, _dataTestingSketchesCols;
 
 	//Alocando os slices do conjunto de treinamento
-	for(int k=0; k<trainingPhotosDesc[0][0].size();k++){
+	for(uint k=0; k<trainingPhotosDesc[0][0].size();k++){
 		Mat _data;
-		for(int i=0; i< trainingPhotosDesc.size(); i++){
+		for(uint i=0; i< trainingPhotosDesc.size(); i++){
 			Mat temp = trainingPhotosDesc[i][0][k].clone();
-			for(int j=1; j<trainingPhotosDesc[0].size();j++){
+			for(uint j=1; j<trainingPhotosDesc[0].size();j++){
 				hconcat(temp,trainingPhotosDesc[i][j][k],temp);
 			}
 			//temp = temp*(30.0/sum(temp).val[0]);
 			_data.push_back(temp);
 		}
-		for(int i=0; i< trainingSketchesDesc.size(); i++){
+		for(uint i=0; i< trainingSketchesDesc.size(); i++){
 			Mat temp = trainingSketchesDesc[i][0][k].clone();
-			for(int j=1; j<trainingSketchesDesc[0].size();j++){
+			for(uint j=1; j<trainingSketchesDesc[0].size();j++){
 				hconcat(temp,trainingSketchesDesc[i][j][k],temp);
 			}
 			//temp = temp*(30.0/sum(temp).val[0]);
@@ -210,11 +210,11 @@ int main(int argc, char** argv){
 																	<< " de " << _dataTrainingCols[0].size() << endl;
 
 	//Alocando os slices das fotos de teste
-	for(int k=0; k<testingPhotosDesc[0][0].size();k++){
+	for(uint k=0; k<testingPhotosDesc[0][0].size();k++){
 		Mat _data;
-		for(int i=0; i< testingPhotosDesc.size(); i++){
+		for(uint i=0; i< testingPhotosDesc.size(); i++){
 			Mat temp = testingPhotosDesc[i][0][k].clone();
-			for(int j=1; j<testingPhotosDesc[0].size();j++){
+			for(uint j=1; j<testingPhotosDesc[0].size();j++){
 				hconcat(temp,testingPhotosDesc[i][j][k],temp);
 			}
 			//temp = temp*(30.0/sum(temp).val[0]);
@@ -229,11 +229,11 @@ int main(int argc, char** argv){
 
 
 	//Alocando os slices dos sketches de teste
-	for(int k=0; k<testingSketchesDesc[0][0].size();k++){
+	for(uint k=0; k<testingSketchesDesc[0][0].size();k++){
 		Mat _data;
-		for(int i=0; i< testingSketchesDesc.size(); i++){
+		for(uint i=0; i< testingSketchesDesc.size(); i++){
 			Mat temp = testingSketchesDesc[i][0][k].clone();
-			for(int j=1; j<testingSketchesDesc[0].size();j++){
+			for(uint j=1; j<testingSketchesDesc[0].size();j++){
 				hconcat(temp,testingSketchesDesc[i][j][k],temp);
 			}
 			//temp = temp*(30.0/sum(temp).val[0]);
@@ -252,7 +252,7 @@ int main(int argc, char** argv){
 
 	int num_pca = 100<=nTraining-1 ? 100 : nTraining-1;
 
-	for(int k=0; k<_dataTrainingCols.size(); k++){//cada coluna
+	for(uint k=0; k<_dataTrainingCols.size(); k++){//cada coluna
 
 		PCA pca(_dataTrainingCols[k],Mat(),CV_PCA_DATA_AS_ROW,num_pca); //<< olhar isso;
 		Mat _dataPCA;
@@ -285,7 +285,7 @@ int main(int argc, char** argv){
 	vector<int> rank(nTestingSketches);
 	for(int i=0; i< nTestingSketches; i++){
 		float val=0;
-		for(int k=0; k<photosFinalDescriptors[i].size(); k++){
+		for(uint k=0; k<photosFinalDescriptors[i].size(); k++){
 			val+= euclideanDistance(photosFinalDescriptors[i][k],
 					sketchesFinalDescriptors[i][k]);
 			//cerr << photosFinalDescriptors[i][k] << endl;
@@ -297,7 +297,7 @@ int main(int argc, char** argv){
 		int count=0;
 		for(int j=0; j<nTestingPhotos; j++){
 			float temp=0;
-			for(int k=0; k<photosFinalDescriptors[i].size(); k++){
+			for(uint k=0; k<photosFinalDescriptors[i].size(); k++){
 				temp+= euclideanDistance(photosFinalDescriptors[j][k],
 						sketchesFinalDescriptors[i][k]);
 			}

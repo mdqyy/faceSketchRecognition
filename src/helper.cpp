@@ -15,7 +15,7 @@
  *
  *   See <http://www.opensource.org/licenses/bsd-license>
  */
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 #include "helper.hpp"
 
 using namespace cv;
@@ -107,7 +107,7 @@ histc_(const Mat& src, int minVal=0, int maxVal=255, bool normed=false) {
     // Establish the number of bins.
     int histSize = maxVal-minVal+1;
     // Set the ranges.
-    float range[] = { minVal, maxVal+1 } ;
+    float range[] = { (float) minVal, (float) maxVal+1 } ;
     const float* histRange = { range };
     // calc histogram
     calcHist(&src, 1, 0, Mat(), result, 1, &histSize, &histRange, true, false);
@@ -160,7 +160,7 @@ void cv::sortMatrixColumnsByIndices(InputArray _src, InputArray _indices, Output
     vector<int> indices = _indices.getMat();
     _dst.create(src.rows, src.cols, src.type());
     Mat dst = _dst.getMat();
-    for(int idx = 0; idx < indices.size(); idx++) {
+    for(uint idx = 0; idx < indices.size(); idx++) {
         Mat originalCol = src.col(indices[idx]);
         Mat sortedCol = dst.col(idx);
         originalCol.copyTo(sortedCol);
@@ -185,7 +185,7 @@ void cv::sortMatrixRowsByIndices(InputArray _src, InputArray _indices, OutputArr
     vector<int> indices = _indices.getMat();
     _dst.create(src.rows, src.cols, src.type());
     Mat dst = _dst.getMat();
-    for(int idx = 0; idx < indices.size(); idx++) {
+    for(uint idx = 0; idx < indices.size(); idx++) {
         Mat originalRow = src.row(indices[idx]);
         Mat sortedRow = dst.row(idx);
         originalRow.copyTo(sortedRow);
@@ -216,7 +216,7 @@ Mat cv::asRowMatrix(InputArrayOfArrays src, int rtype, double alpha, double beta
     // create data matrix
     Mat data(n, d, rtype);
     // now copy data
-    for(int i = 0; i < n; i++) {
+    for(uint i = 0; i < n; i++) {
         // make sure data can be reshaped, throw exception if not!
         if(src.getMat(i).total() != d) {
             string error_message = format("Wrong number of elements in matrix #%d! Expected %d was %d.", i, d, src.getMat(i).total());
@@ -247,7 +247,7 @@ Mat cv::asColumnMatrix(InputArrayOfArrays src, int rtype, double alpha, double b
     if(n == 0)
         return Mat();
     // dimensionality of samples
-    int d = src.getMat(0).total();
+    uint d = src.getMat(0).total();
     // create data matrix
     Mat data(d, n, rtype);
     // now copy data
