@@ -25,7 +25,7 @@ int main( int argc, char** argv )
   namedWindow( window_name, CV_WINDOW_AUTOSIZE );
   
   /// Load the source image
-  src = imread( "/home/marco/Imagens/f-037-01.jpg", 0 );
+  src = imread( "/home/marco/Imagens/0098.png", 0 );
   
   if( display_caption( "Original Image" ) != 0 ) { return 0; }
   
@@ -100,7 +100,7 @@ int display_caption( char* caption )
 
 int display_dst( int delay )
 {
-  cout << "size = "<< dst.size() << ", type = " << dst.type() << endl;
+  //cout << "size = "<< dst.size() << ", type = " << dst.type() << endl;
   imshow( window_name, dst );
   int c = waitKey ( delay );
   if( c >= 0 ) { return -1; }
