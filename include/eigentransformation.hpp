@@ -40,11 +40,11 @@ private:
   void createEigenSpace(vector<Mat>&, Mat&, Mat&, Mat&, Mat&, Mat&);
   
 public:
-  Eigentransformation(vector<Mat>&,vector<Mat>&);
+  Eigentransformation(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches);
   virtual ~Eigentransformation();
   void compute();
-  void projectPhoto(Mat&,Mat&,Mat&,Mat&);
-  void projectSketch(Mat&,Mat&,Mat&,Mat&);
+  void projectPhoto(Mat& photo, Mat& photoB, Mat& photoContr, Mat& recSketchB);
+  void projectSketch(Mat& sketch, Mat& sketchB, Mat& sketchContr, Mat& recPhotoB);
 };
 
 #endif // EIGENTRANSFORMATION_HPP
