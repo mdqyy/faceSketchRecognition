@@ -64,11 +64,14 @@ int main(int argc, char** argv){
   Mat image;
   
   cerr << "projecting testing sketches" << endl;
+  
+  #pragma omp parallel for
   for(int i=0; i<nTestingSketches; i++){
     eigenT.projectSketch(testingSketches[i],sketchesB[i],sketchesContr[i],recPhotosB[i]);
   }
   
   cerr << "projecting testing photos" << endl;
+  #pragma omp parallel for
   for(int i=0; i<nTestingPhotos; i++){  
     eigenT.projectPhoto(testingPhotos[i],photosB[i],photosContr[i],recSketchesB[i]);
   }

@@ -1,6 +1,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "filters.hpp"
+#include "utils.hpp"
 
 using namespace std;
 using namespace cv;
@@ -22,6 +23,27 @@ int display_dst( int delay );
   */
 int main( int argc, char** argv )
 {
+  
+  vector<Mat> temp;
+  Mat aux = Mat(5,5,CV_8U);
+  
+  for(int i=0; i<10; i++){
+      randu(aux, Scalar(0), Scalar(255));
+      temp.push_back(aux.clone());
+  }
+  
+  for(auto i : temp)
+    cout << i << endl;
+  
+  Mat vals, vecs;
+  
+  myPCA(temp, vecs, vals);
+  
+  cout << vecs << endl;
+  cout << vals << endl;
+  
+  return 0;
+  
   namedWindow( window_name, CV_WINDOW_AUTOSIZE );
   
   /// Load the source image
