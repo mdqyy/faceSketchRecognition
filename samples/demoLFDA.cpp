@@ -38,11 +38,14 @@ int main(int argc, char** argv){
   loadImages(argv[4],sketches,1);
   
   
-  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+88,vphotos.end());
-  testingSketches.insert(testingSketches.end(),vsketches.begin()+88,vsketches.end());
+  testingPhotos.insert(testingPhotos.end(),photos.begin(),photos.end());
+  testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+88);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+88);
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.end());
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.end());
+  
+  LFDA lfda(trainingPhotos, trainingSketches);
+  lfda.compute();
   
   //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.begin()+999);
   
@@ -53,6 +56,42 @@ int main(int argc, char** argv){
   cerr << nTraining << " pares para treinamento." << endl;
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
+  
+  
+  vector<Mat> testingPhotosfinal2, testingSketchesfinal2;
+  
+  
+  for(int i=0; i< nTestingPhotos; i++)
+    testingPhotosfinal2.push_back(lfda.project(testingPhotos[i]));
+  
+  for(int i=0; i< nTestingSketches; i++)
+    testingSketchesfinal2.push_back(lfda.project(testingSketches[i]));
+  
+  vector<int> rank2(nTestingSketches);
+  
+  for(int i=0; i<nTestingSketches; i++){
+    float val = euclideanDistance(testingPhotosfinal2[i],testingSketchesfinal2[i]);
+    if(val!=val)
+      cerr << "photo and sketch "<< i << " d1= "<< val << endl;
+    int temp = 0;
+    for(int j=0; j<nTestingPhotos; j++){
+      if(euclideanDistance(testingPhotosfinal2[j],testingSketchesfinal2[i])<= val && i!=j){
+	if(val!=val)
+	  cerr << "small "<< i << " d1= "<< val << endl;
+	temp++;
+      }
+    }
+    rank2[i] = temp;
+  }
+  
+  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
+  {
+  cerr << "Rank "<< i << ": ";
+  cerr << "d1= " << (float)count_if(rank2.begin(), rank2.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
+  }
+
+  
+  return 0;
   
   
   //LFDA
@@ -171,7 +210,7 @@ int main(int argc, char** argv){
       for(uint j=1; j<trainingPhotosDesc[0].size();j++){
 	hconcat(temp,trainingPhotosDesc[i][j][k],temp);
       }
-      //temp = temp*(30.0/sum(temp).val[0]);
+      normalize(temp,temp,1);
       _data.push_back(temp);
     }
     for(uint i=0; i< trainingSketchesDesc.size(); i++){
@@ -179,7 +218,7 @@ int main(int argc, char** argv){
       for(uint j=1; j<trainingSketchesDesc[0].size();j++){
 	hconcat(temp,trainingSketchesDesc[i][j][k],temp);
       }
-      //temp = temp*(30.0/sum(temp).val[0]);
+      normalize(temp,temp,1);
       _data.push_back(temp);
     }
     _dataTrainingCols.push_back(_data);
@@ -196,7 +235,7 @@ int main(int argc, char** argv){
       for(uint j=1; j<testingPhotosDesc[0].size();j++){
 	hconcat(temp,testingPhotosDesc[i][j][k],temp);
       }
-      //temp = temp*(30.0/sum(temp).val[0]);
+      normalize(temp,temp,1);
       _data.push_back(temp);
     }
     _dataTestingPhotosCols.push_back(_data);
@@ -215,7 +254,7 @@ int main(int argc, char** argv){
       for(uint j=1; j<testingSketchesDesc[0].size();j++){
 	hconcat(temp,testingSketchesDesc[i][j][k],temp);
       }
-      //temp = temp*(30.0/sum(temp).val[0]);
+      normalize(temp,temp,1);
       _data.push_back(temp);
     }
     _dataTestingSketchesCols.push_back(_data);

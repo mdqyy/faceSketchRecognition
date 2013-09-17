@@ -24,6 +24,7 @@
 #include <eigen3/Eigen/Eigenvalues>
 #include <opencv2/core/eigen.hpp>
 #include <vector>
+#include <iostream>
 
 using namespace cv;
 using namespace Eigen;
