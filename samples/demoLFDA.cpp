@@ -14,10 +14,17 @@
 #include "utils.hpp"
 #include "lfda.hpp"
 
+#include <time.h>
+
 using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv){
+
+  clock_t start,end;
+  int tempo;
+
+  start=clock();
   
   /*	if(argc != 5){
    *		cout << "Usage: "<< argv[0] << "<photos> <sketches>"
@@ -31,23 +38,22 @@ int main(int argc, char** argv){
   
   vector<Mat> photos, sketches, extra, vphotos, vsketches;
   
-  //loadImages(argv[3],extra,1);
   loadImages(argv[1],vphotos,1);
   loadImages(argv[2],vsketches,1);
   loadImages(argv[3],photos,1);
   loadImages(argv[4],sketches,1);
+  loadImages(argv[5],extra,1);
   
   
-  testingPhotos.insert(testingPhotos.end(),photos.begin(),photos.end());
-  testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
+  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+471,vphotos.begin()+571);
+  testingSketches.insert(testingSketches.end(),vsketches.begin()+471,vsketches.begin()+571);
+  //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.end());
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.end());
+  //for(int i=0; i<10; i++)
+    //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
-  LFDA lfda(trainingPhotos, trainingSketches);
-  lfda.compute();
-  
-  //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.begin()+999);
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+383,vphotos.begin()+471);
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+383,vsketches.begin()+471);
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
@@ -57,31 +63,39 @@ int main(int argc, char** argv){
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
   
-  
+  LFDA lfda(trainingPhotos, trainingSketches);
+  lfda.compute();
+     
   vector<Mat> testingPhotosfinal2, testingSketchesfinal2;
   
+  cerr << "projecting testing photos" << endl;
   
   for(int i=0; i< nTestingPhotos; i++)
     testingPhotosfinal2.push_back(lfda.project(testingPhotos[i]));
+  
+  cerr << "projecting testing sketches" << endl;
   
   for(int i=0; i< nTestingSketches; i++)
     testingSketchesfinal2.push_back(lfda.project(testingSketches[i]));
   
   vector<int> rank2(nTestingSketches);
   
+  cerr << "calculating distances" << endl;
+  
   for(int i=0; i<nTestingSketches; i++){
-    float val = euclideanDistance(testingPhotosfinal2[i],testingSketchesfinal2[i]);
+    double val = norm(testingPhotosfinal2[i],testingSketchesfinal2[i], NORM_L2);//euclideanDistance(testingPhotosfinal2[i],testingSketchesfinal2[i]);
     if(val!=val)
       cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(euclideanDistance(testingPhotosfinal2[j],testingSketchesfinal2[i])<= val && i!=j){
+      if(norm(testingPhotosfinal2[j],testingSketchesfinal2[i],NORM_L2)<= val && i!=j){//euclideanDistance(testingPhotosfinal2[j],testingSketchesfinal2[i])<= val && i!=j){
 	if(val!=val)
 	  cerr << "small "<< i << " d1= "<< val << endl;
 	temp++;
       }
     }
     rank2[i] = temp;
+    cerr << i << " rank= " << temp << endl;
   }
   
   for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
@@ -90,7 +104,9 @@ int main(int argc, char** argv){
   cerr << "d1= " << (float)count_if(rank2.begin(), rank2.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
   }
 
-  
+  end=clock();
+  tempo=(end-start)/CLOCKS_PER_SEC;
+  cout << "Tempo de execução = " << tempo/60 << " min e " << tempo%60 << " s"<< endl;
   return 0;
   
   

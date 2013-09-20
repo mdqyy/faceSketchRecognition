@@ -38,11 +38,11 @@ int main(int argc, char** argv){
   loadImages(argv[4],sketches,1);
   
   
-  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+88,vphotos.end());
-  testingSketches.insert(testingSketches.end(),vsketches.begin()+88,vsketches.end());
+  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+383,vphotos.begin()+471);
+  testingSketches.insert(testingSketches.end(),vsketches.begin()+383,vsketches.begin()+471);
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+88);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+88);
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+471,vphotos.end());
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+471,vsketches.end());
   
   //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.begin()+999);
   
@@ -80,12 +80,12 @@ int main(int argc, char** argv){
   
   cerr << "calc d1" << endl;
   for(int i=0; i<nTestingSketches; i++){
-    float val = euclideanDistance(photosContr[i],sketchesContr[i]);
+    double val = norm(photosContr[i],sketchesContr[i], NORM_L2);//euclideanDistance(photosContr[i],sketchesContr[i]);
     if(val!=val)
       cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(euclideanDistance(photosContr[j],sketchesContr[i])<= val && i!=j){
+      if(norm(photosContr[j],sketchesContr[i],NORM_L2)<= val && i!=j){//euclideanDistance(photosContr[j],sketchesContr[i])<= val && i!=j){
 	if(val!=val)
 	  cerr << "small "<< i << " d1= "<< val << endl;
 	temp++;
@@ -96,12 +96,12 @@ int main(int argc, char** argv){
   
   cerr << "calc d2" << endl;
   for(int i=0; i<nTestingSketches; i++){
-    float val = euclideanDistance(recSketchesB[i],sketchesB[i]);
+    double val = norm(recSketchesB[i],sketchesB[i],NORM_L2);//euclideanDistance(recSketchesB[i],sketchesB[i]);
     if(val!=val)
       cerr << "photo and sketch "<< i << " d2= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(euclideanDistance(recSketchesB[j],sketchesB[i])<= val && i!=j){
+      if(norm(recSketchesB[j],sketchesB[i],NORM_L2)<= val && i!=j){//euclideanDistance(recSketchesB[j],sketchesB[i])<= val && i!=j){
 	if(val!=val)
 	  cerr << "small "<< i << " d2= "<< val << endl;
 	temp++;
@@ -112,12 +112,12 @@ int main(int argc, char** argv){
   
   cerr << "calc d3" << endl;
   for(int i=0; i<nTestingSketches; i++){
-    float val = euclideanDistance(recPhotosB[i],photosB[i]);
+    double val = norm(recPhotosB[i],photosB[i],NORM_L2);//euclideanDistance(recPhotosB[i],photosB[i]);
     if(val!=val)
       cerr << "photo and sketch "<< i << " d3= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(euclideanDistance(recPhotosB[i],photosB[j])<= val && i!=j){
+      if(norm(recPhotosB[i],photosB[j],NORM_L2)<= val && i!=j){//euclideanDistance(recPhotosB[i],photosB[j])<= val && i!=j){
 	if(val!=val)
 	  cerr << "small "<< i << " d3= "<< val << endl;
 	temp++;

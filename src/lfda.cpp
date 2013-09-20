@@ -89,12 +89,10 @@ void LFDA::compute()
 	valsDiag.at<float>(i,i) = aux;
     }
     
-    Mat Vk = (valsDiag*VVk.t()).t();
-    
-    Mat V;
+    Mat Vk = (valsDiag*VVk).t();
     
     pca(Vk.t()*Yk,Mat(),CV_PCA_DATA_AS_COL,99);
-    Mat Uk = pca.eigenvectors; // Deveria ser (100x99)
+    Mat Uk = pca.eigenvectors.clone(); // Deveria ser (100x99)
     
     Mat omega = Wk.t()*Vk*Uk.t(); // Deveria ser (99x10920)
     
