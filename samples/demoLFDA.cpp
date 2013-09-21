@@ -42,18 +42,15 @@ int main(int argc, char** argv){
   loadImages(argv[2],vsketches,1);
   loadImages(argv[3],photos,1);
   loadImages(argv[4],sketches,1);
-  loadImages(argv[5],extra,1);
+  //loadImages(argv[5],extra,1);
   
   
-  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+471,vphotos.begin()+571);
-  testingSketches.insert(testingSketches.end(),vsketches.begin()+471,vsketches.begin()+571);
+  testingPhotos.insert(testingPhotos.end(),vphotos.begin(),vphotos.begin()+250);
+  testingSketches.insert(testingSketches.end(),vsketches.begin(),vsketches.begin()+250);
   //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
-  //for(int i=0; i<10; i++)
-    //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
-  
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+383,vphotos.begin()+471);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+383,vsketches.begin()+471);
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+250,vphotos.end());
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+250,vsketches.end());
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
@@ -70,9 +67,11 @@ int main(int argc, char** argv){
   
   cerr << "projecting testing photos" << endl;
   
-  for(int i=0; i< nTestingPhotos; i++)
+  for(int i=0; i< nTestingPhotos; i++){
+    if(!(i%100))
+      cerr << i*100/nTestingPhotos << "% " ;
     testingPhotosfinal2.push_back(lfda.project(testingPhotos[i]));
-  
+  }
   cerr << "projecting testing sketches" << endl;
   
   for(int i=0; i< nTestingSketches; i++)
@@ -83,12 +82,12 @@ int main(int argc, char** argv){
   cerr << "calculating distances" << endl;
   
   for(int i=0; i<nTestingSketches; i++){
-    double val = norm(testingPhotosfinal2[i],testingSketchesfinal2[i], NORM_L2);//euclideanDistance(testingPhotosfinal2[i],testingSketchesfinal2[i]);
+    double val = norm(testingPhotosfinal2[i],testingSketchesfinal2[i], NORM_L2);
     if(val!=val)
       cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(norm(testingPhotosfinal2[j],testingSketchesfinal2[i],NORM_L2)<= val && i!=j){//euclideanDistance(testingPhotosfinal2[j],testingSketchesfinal2[i])<= val && i!=j){
+      if(norm(testingPhotosfinal2[j],testingSketchesfinal2[i],NORM_L2)<= val && i!=j){
 	if(val!=val)
 	  cerr << "small "<< i << " d1= "<< val << endl;
 	temp++;
