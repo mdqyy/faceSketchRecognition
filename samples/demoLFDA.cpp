@@ -42,15 +42,21 @@ int main(int argc, char** argv){
   loadImages(argv[2],vsketches,1);
   loadImages(argv[3],photos,1);
   loadImages(argv[4],sketches,1);
-  //loadImages(argv[5],extra,1);
+  loadImages(argv[5],extra,1);
   
   
-  testingPhotos.insert(testingPhotos.end(),vphotos.begin(),vphotos.begin()+250);
-  testingSketches.insert(testingSketches.end(),vsketches.begin(),vsketches.begin()+250);
-  //testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
+  testingPhotos.insert(testingPhotos.end(),photos.begin(),photos.end());
+  testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
+  testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
   trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+250,vphotos.end());
   trainingSketches.insert(trainingSketches.end(),vsketches.begin()+250,vsketches.end());
+  
+  vphotos.clear();
+  vsketches.clear();
+  photos.clear();
+  sketches.clear();
+  extra.clear();
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
@@ -62,20 +68,27 @@ int main(int argc, char** argv){
   
   LFDA lfda(trainingPhotos, trainingSketches);
   lfda.compute();
+  
+  trainingPhotos.clear();
+  trainingSketches.clear();
      
-  vector<Mat> testingPhotosfinal2, testingSketchesfinal2;
+  vector<Mat> testingPhotosfinal2(nTestingPhotos), testingSketchesfinal2(nTestingSketches);
   
   cerr << "projecting testing photos" << endl;
   
-  for(int i=0; i< nTestingPhotos; i++){
-    if(!(i%100))
-      cerr << i*100/nTestingPhotos << "% " ;
-    testingPhotosfinal2.push_back(lfda.project(testingPhotos[i]));
-  }
+  #pragma omp parallel for
+  for(int i=0; i< nTestingPhotos; i++)
+    testingPhotosfinal2[i] = lfda.project(testingPhotos[i]).clone();
+  
+  testingPhotos.clear();
+  
   cerr << "projecting testing sketches" << endl;
   
+  #pragma omp parallel for
   for(int i=0; i< nTestingSketches; i++)
-    testingSketchesfinal2.push_back(lfda.project(testingSketches[i]));
+    testingSketchesfinal2[i] = lfda.project(testingSketches[i]).clone();
+  
+  testingSketches.clear();
   
   vector<int> rank2(nTestingSketches);
   

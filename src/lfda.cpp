@@ -55,10 +55,11 @@ void LFDA::compute()
 	this->Xpk.push_back(phi[j]);
       else
 	hconcat(this->Xpk[j], phi[j], this->Xpk[j]);
-	
+      
       hconcat(this->Xk[j], phi[j], this->Xk[j]);
     }
   }
+  
   
   for(int i=0; i < Xk.size(); i++){
     
@@ -96,18 +97,18 @@ void LFDA::compute()
     
     Mat omega = Wk.t()*Vk*Uk.t(); // Deveria ser (99x10920)
     
-   /* cout << this->Xk.size() << endl <<
-    Xk[i].size() << endl <<
-    Yk.size() << endl <<
-    Wk.size() << endl <<
-    XXsk.size() << endl <<
-    XXk.size() << endl <<
-    VVk.size() << endl <<
-    valsDiag.size() << endl <<
-    Vk.size() << endl <<
-    Uk.size() << endl <<
-    omega.size() << endl;
-    */
+    /* cout << this->Xk.size() << endl <<
+     *    Xk[i].size() << endl <<
+     *    Yk.size() << endl <<
+     *    Wk.size() << endl <<
+     *    XXsk.size() << endl <<
+     *    XXk.size() << endl <<
+     *    VVk.size() << endl <<
+     *    valsDiag.size() << endl <<
+     *    Vk.size() << endl <<
+     *    Uk.size() << endl <<
+     *    omega.size() << endl;
+     */
     this->omegaK.push_back(omega);
   }
 }
@@ -116,12 +117,12 @@ Mat LFDA::project(Mat& image)
 {
   vector<Mat> phi = this->extractDescriptors(image,16,8);
   Mat result = this->omegaK[0].t()*phi[0];
-    for(int j=1; j<phi.size(); j++){
-      vconcat(result, this->omegaK[j].t()*phi[j], result);
-    }
-    
-    normalize(result, result, 1);
-    
+  for(int j=1; j<phi.size(); j++){
+    vconcat(result, this->omegaK[j].t()*phi[j], result);
+  }
+  
+  normalize(result, result, 1);
+  
   return result;
 }
 
