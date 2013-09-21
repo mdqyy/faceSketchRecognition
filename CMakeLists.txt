@@ -67,7 +67,9 @@ endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/samples AND ENABLE_SAMPLES) 
 	# probably there's a simpler way to link against multiple executables...
-	add_executable(demoLFDA samples/demoLFDA.cpp)
+    add_executable(demoKernelProto samples/demoKernelProto.cpp)
+	target_link_libraries(demoKernelProto ${the_library} ${OpenCV_LIBS})	
+    add_executable(demoLFDA samples/demoLFDA.cpp)
 	target_link_libraries(demoLFDA ${the_library} ${OpenCV_LIBS})	
 	add_executable(demoEigentransformation samples/demoEigentransformation.cpp)
 	target_link_libraries(demoEigentransformation ${the_library} ${OpenCV_LIBS})	

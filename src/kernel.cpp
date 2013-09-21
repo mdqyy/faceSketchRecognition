@@ -19,13 +19,10 @@
 
 #include "kernel.hpp"
 
-Kernel::Kernel()
+Kernel::Kernel(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches)
 {
-
-}
-
-Kernel::Kernel(const Kernel& other)
-{
+  this->trainingPhotos=trainingPhotos;
+  this->trainingSketches=trainingSketches;
 
 }
 
@@ -34,14 +31,14 @@ Kernel::~Kernel()
 
 }
 
-Kernel& Kernel::operator=(const Kernel& other)
+void Kernel::compute()
 {
-return *this;
+  
 }
 
-bool Kernel::operator==(const Kernel& other) const
+Mat Kernel::project(Mat& image)
 {
-///TODO: return ...;
-return false;
+  
+  return Mat();
 }
 
