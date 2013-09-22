@@ -20,10 +20,10 @@ using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv){
-
+  
   clock_t start,end;
   int tempo;
-
+  
   start=clock();
   
   /*	if(argc != 5){
@@ -32,7 +32,7 @@ int main(int argc, char** argv){
    *		return -1;
 }
 */
-   
+  
   vector<Mat> trainingPhotos,	trainingSketches,
   testingPhotos,testingSketches;
   
@@ -66,27 +66,39 @@ int main(int argc, char** argv){
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
   
-  LFDA lfda(trainingPhotos, trainingSketches);
-  lfda.compute();
+  LFDA lfda1(trainingPhotos, trainingSketches,16,8);
+  LFDA lfda2(trainingPhotos, trainingSketches,32,16);
+  
+  #pragma omp parallel sections
+  {
+    #pragma omp section
+    lfda1.compute();
+    #pragma omp section
+    lfda2.compute();
+  }
   
   trainingPhotos.clear();
   trainingSketches.clear();
-     
+  
   vector<Mat> testingPhotosfinal2(nTestingPhotos), testingSketchesfinal2(nTestingSketches);
   
   cerr << "projecting testing photos" << endl;
   
   #pragma omp parallel for
-  for(int i=0; i< nTestingPhotos; i++)
-    testingPhotosfinal2[i] = lfda.project(testingPhotos[i]).clone();
+  for(int i=0; i< nTestingPhotos; i++){
+    testingPhotosfinal2[i] = lfda1.project(testingPhotos[i]).clone();
+    vconcat(testingPhotosfinal2[i],lfda2.project(testingPhotos[i]).clone(),testingPhotosfinal2[i]);
+  }
   
   testingPhotos.clear();
   
   cerr << "projecting testing sketches" << endl;
   
   #pragma omp parallel for
-  for(int i=0; i< nTestingSketches; i++)
-    testingSketchesfinal2[i] = lfda.project(testingSketches[i]).clone();
+  for(int i=0; i< nTestingSketches; i++){
+    testingSketchesfinal2[i] = lfda1.project(testingSketches[i]).clone();
+    vconcat(testingSketchesfinal2[i],lfda2.project(testingSketches[i]).clone(),testingSketchesfinal2[i]);
+  }
   
   testingSketches.clear();
   
@@ -112,13 +124,14 @@ int main(int argc, char** argv){
   
   for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
   {
-  cerr << "Rank "<< i << ": ";
-  cerr << "d1= " << (float)count_if(rank2.begin(), rank2.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
+    cerr << "Rank "<< i << ": ";
+    cerr << "d1= " << (float)count_if(rank2.begin(), rank2.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
   }
-
+  
   end=clock();
   tempo=(end-start)/CLOCKS_PER_SEC;
   cout << "Tempo de execução = " << tempo/60 << " min e " << tempo%60 << " s"<< endl;
+  
   return 0;
   
   
@@ -162,7 +175,7 @@ int main(int argc, char** argv){
   " imgs, divididas em " << trainingPhotosDesc[0].size() <<
   "x" << trainingPhotosDesc[0][0].size() <<
   " de " << trainingPhotosDesc[0][0][0].size() << endl;
-    
+  
   cerr << "Extraindo descritores dos patches de teste= ";
   
   //Extraindo os patches das fotos de teste
@@ -365,10 +378,10 @@ int main(int argc, char** argv){
   
   for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
   {
-  cerr << "Rank "<< i << ": ";
-  cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
+    cerr << "Rank "<< i << ": ";
+    cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
   }
-
+  
   
   return 0;
 }

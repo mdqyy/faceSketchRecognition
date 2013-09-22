@@ -31,9 +31,10 @@ class LFDA
 {
 private:
   vector<Mat> trainingPhotos,	trainingSketches, Xsk, Xpk, Xk, omegaK;
+  int size, overlap;
   
 public:
-  LFDA(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches);
+  LFDA(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches, int size, int overlap);
   virtual ~LFDA();
   void compute();
   Mat project(Mat& image);

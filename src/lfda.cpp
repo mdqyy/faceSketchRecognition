@@ -19,12 +19,12 @@
 
 #include "lfda.hpp"
 
-LFDA::LFDA(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches)
+LFDA::LFDA(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches, int size, int overlap)
 {
   this->trainingPhotos=trainingPhotos;
   this->trainingSketches=trainingSketches;
-  
-  //this->nTraining=this->trainingPhotos.size();
+  this->size = size;
+  this->overlap = overlap;
 }
 
 LFDA::~LFDA()
@@ -35,7 +35,7 @@ LFDA::~LFDA()
 void LFDA::compute()
 {
   for(int i=0; i < this->trainingSketches.size(); i++){
-    vector<Mat> phi = this->extractDescriptors(this->trainingSketches[i],16,8);
+    vector<Mat> phi = this->extractDescriptors(this->trainingSketches[i],this->size,this->overlap);
     for(int j=0; j<phi.size(); j++){
       if(i==0){
 	this->Xsk.push_back(phi[j]);
@@ -49,7 +49,7 @@ void LFDA::compute()
   }
   
   for(int i=0; i < this->trainingPhotos.size(); i++){
-    vector<Mat> phi = this->extractDescriptors(this->trainingPhotos[i],16,8);
+    vector<Mat> phi = this->extractDescriptors(this->trainingPhotos[i],this->size,this->overlap);
     for(int j=0; j<phi.size(); j++){
       if(i==0)
 	this->Xpk.push_back(phi[j]);
@@ -115,7 +115,7 @@ void LFDA::compute()
 
 Mat LFDA::project(Mat& image)
 {
-  vector<Mat> phi = this->extractDescriptors(image,16,8);
+  vector<Mat> phi = this->extractDescriptors(image,this->size,this->overlap);
   Mat result = this->omegaK[0].t()*phi[0];
   for(int j=1; j<phi.size(); j++){
     vconcat(result, this->omegaK[j].t()*phi[j], result);
@@ -135,7 +135,9 @@ vector<Mat> LFDA::extractDescriptors(Mat& img, int size, int delta){
     for(int j=0;j<=h-size;j+=(size-delta)){
       Mat a, b;
       calcSIFTDescriptors(img(Rect(i,j,size,size)),a);
+      normalize(a,a,1);
       calcLBPHistogram(img(Rect(i,j,size,size)),b);
+      normalize(b,b,1);
       hconcat(a,b,temp);
       if(aux.empty())
 	aux = temp.clone();

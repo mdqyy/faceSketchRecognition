@@ -38,6 +38,7 @@ public:
   virtual ~Kernel();
   void compute();
   Mat project(Mat& image);
+  double cosineKernel(Mat& x, Mat& y);  
 };
 
 #endif // KERNEL_HPP
