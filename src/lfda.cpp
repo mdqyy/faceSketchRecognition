@@ -135,9 +135,9 @@ vector<Mat> LFDA::extractDescriptors(Mat& img, int size, int delta){
     for(int j=0;j<=h-size;j+=(size-delta)){
       Mat a, b;
       calcSIFTDescriptors(img(Rect(i,j,size,size)),a);
-      normalize(a,a,1);
+      //normalize(a,a,1);
       calcLBPHistogram(img(Rect(i,j,size,size)),b);
-      normalize(b,b,1);
+      //normalize(b,b,1);
       hconcat(a,b,temp);
       if(aux.empty())
 	aux = temp.clone();
