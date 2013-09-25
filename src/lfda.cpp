@@ -62,20 +62,51 @@ void LFDA::compute()
   
   
   for(int i=0; i < Xk.size(); i++){
+   
+    Mat Xk_mean=Xk[i].col(0), Xpk_mean=Xpk[i].col(0), Xsk_mean=Xsk[i].col(0);
+    
+    int ncols = Xk[i].cols; 
+    for(int j=0; j<ncols; j++)
+	Xk_mean+=Xk[i].col(j);
+    
+    Xk_mean = Xk_mean*(1.0/ncols);
+    
+    for(int j=0; j<ncols; j++)
+      Xk[i].col(j)-=Xk_mean;
+
+    
+    ncols = Xpk[i].cols; 
+    for(int j=0; j<ncols; j++)
+	Xpk_mean+=Xpk[i].col(j);
+    
+    Xpk_mean = Xpk_mean*(1.0/ncols);
+    
+    for(int j=0; j<ncols; j++)
+      Xpk[i].col(j)-=Xpk_mean;
+      
+    
+    ncols = Xsk[i].cols; 
+    for(int j=0; j<ncols; j++)
+	Xsk_mean+=Xsk[i].col(j);
+    
+    Xsk_mean = Xsk_mean*(1.0/ncols);
+    
+    for(int j=0; j<ncols; j++)
+      Xsk[i].col(j)-=Xsk_mean;
     
     PCA pca(this->Xk[i],Mat(),CV_PCA_DATA_AS_COL,100);
-    Mat Wk = pca.eigenvectors.clone();
+    Mat Wk = pca.eigenvectors.t();
     
-    Mat Yk = Wk*(this->Xsk[i]+this->Xpk[i])*(0.5);
+    Mat Yk = Wk.t()*(this->Xsk[i]+this->Xpk[i])*(0.5);
     
-    Mat XXsk = Wk*this->Xsk[i]-Yk;
-    Mat XXpk = Wk*this->Xpk[i]-Yk;
+    Mat XXsk = Wk.t()*this->Xsk[i]-Yk;
+    Mat XXpk = Wk.t()*this->Xpk[i]-Yk;
     
     Mat XXk;
     hconcat(XXsk,XXpk,XXk);
     pca(XXk,Mat(),CV_PCA_DATA_AS_COL,100);
     
-    Mat VVk = pca.eigenvectors.clone();
+    Mat VVk = pca.eigenvectors.t();
     Mat Diagk = pca.eigenvalues.clone();
     
     Mat valsDiag = Mat::zeros(VVk.size(), CV_32F);
@@ -90,12 +121,12 @@ void LFDA::compute()
 	valsDiag.at<float>(i,i) = aux;
     }
     
-    Mat Vk = (valsDiag*VVk).t();
+    Mat Vk = (valsDiag*VVk.t()).t();
     
     pca(Vk.t()*Yk,Mat(),CV_PCA_DATA_AS_COL,99);
-    Mat Uk = pca.eigenvectors.clone(); // Deveria ser (100x99)
+    Mat Uk = pca.eigenvectors.t(); // Deveria ser (100x99)
     
-    Mat omega = Wk.t()*Vk*Uk.t(); // Deveria ser (99x10920)
+    Mat omega = Wk*Vk*Uk; // Deveria ser (99x10920)
     
     /* cout << this->Xk.size() << endl <<
      *    Xk[i].size() << endl <<
@@ -113,7 +144,7 @@ void LFDA::compute()
   }
 }
 
-Mat LFDA::project(Mat& image)
+Mat LFDA::project(Mat image)
 {
   vector<Mat> phi = this->extractDescriptors(image,this->size,this->overlap);
   Mat result = this->omegaK[0].t()*phi[0];
@@ -126,7 +157,7 @@ Mat LFDA::project(Mat& image)
   return result;
 }
 
-vector<Mat> LFDA::extractDescriptors(Mat& img, int size, int delta){
+vector<Mat> LFDA::extractDescriptors(Mat img, int size, int delta){
   int w = img.cols, h=img.rows;
   vector<Mat> result;
   
@@ -144,7 +175,7 @@ vector<Mat> LFDA::extractDescriptors(Mat& img, int size, int delta){
       else
 	hconcat(aux, temp, aux);
     }
-    result.push_back(aux.clone().t());
+    result.push_back(aux.t());
   }
   
   return result;

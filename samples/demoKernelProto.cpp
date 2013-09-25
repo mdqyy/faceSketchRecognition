@@ -22,8 +22,8 @@ int main(int argc, char** argv){
   
   loadImages(argv[1],vphotos,1);
   loadImages(argv[2],vsketches,1);
-  //loadImages(argv[3],photos,1);
-  //loadImages(argv[4],sketches,1);
+  loadImages(argv[3],photos,1);
+  loadImages(argv[4],sketches,1);
   //loadImages(argv[5],extra,1);
   
   
@@ -31,8 +31,8 @@ int main(int argc, char** argv){
   testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
   testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+250,vphotos.end());
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+250,vsketches.end());
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+10);
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+10);
   
   vphotos.clear();
   vsketches.clear();
@@ -48,12 +48,17 @@ int main(int argc, char** argv){
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
   
-  Mat a = Mat::zeros(5,1,CV_32F)+3;
-  Mat b = Mat::ones(5,1,CV_32F)*2;
-  
   Kernel k(trainingPhotos, trainingSketches);
   
-  cout << "Kernel value is: " << k.cosineKernel(a,b) << endl;
+  k.compute();
   
+  cout << k.projectGallery(testingPhotos[53]) << endl;
+  cout << k.projectProbe(testingSketches[53]) << endl;
+  cout << endl;
+  cout << k.projectGallery(testingPhotos[1]) << endl;
+  cout << k.projectProbe(testingSketches[1]) << endl;
+  cout << endl;
+  cout << k.projectGallery(testingPhotos[100]) << endl;
+  cout << k.projectProbe(testingSketches[100]) << endl;
   return 0;
 }

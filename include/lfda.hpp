@@ -37,8 +37,8 @@ public:
   LFDA(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches, int size, int overlap);
   virtual ~LFDA();
   void compute();
-  Mat project(Mat& image);
-  vector<Mat> extractDescriptors(Mat& img, int size, int delta);
+  Mat project(Mat image);
+  vector<Mat> extractDescriptors(Mat img, int size, int delta);
 };
 
 #endif // LFDA_HPP

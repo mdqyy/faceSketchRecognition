@@ -33,17 +33,68 @@ Kernel::~Kernel()
 
 void Kernel::compute()
 {
+
+  int n = trainingPhotos.size();
+  Kp = Mat::zeros(n,n,CV_32F);
+  Kg = Mat::zeros(n,n,CV_32F);
   
+  for(int i=0; i<n; i++){
+    trainingPhotosDescriptors.push_back(extractDescriptors(trainingPhotos[i]));
+    trainingSketchesDescriptors.push_back(extractDescriptors(trainingSketches[i]));
+  }
+  
+  for(int i=0; i<n; i++)
+    for(int j=0; j<n; j++){
+      Kg.at<float>(i,j) = this->cosineKernel(trainingPhotosDescriptors[i], trainingPhotosDescriptors[j]);
+      Kp.at<float>(i,j) = this->cosineKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
+    }
+    
+    R = Kg*((Kp).t()*Kp).inv()*(Kp).t();
+
 }
 
-Mat Kernel::project(Mat& image)
+Mat Kernel::projectGallery(Mat image)
 {
+  Mat temp = extractDescriptors(image);
+  int n = trainingPhotosDescriptors.size();
+  Mat result = Mat::zeros(1,n,CV_32F);
+  for(int i=0; i<n; i++)
+    result.at<float>(i) = this->cosineKernel(temp,trainingPhotosDescriptors[i]);
   
-  return Mat();
+  return result.t();
 }
 
-double Kernel::cosineKernel(Mat& x, Mat& y)
+Mat Kernel::projectProbe(Mat image)
 {
+  Mat temp = extractDescriptors(image);
+  int n = trainingSketchesDescriptors.size();
+  Mat result = Mat::zeros(1,n,CV_32F);
+  for(int i=0; i<n; i++)
+    result.at<float>(i) = this->cosineKernel(temp,trainingSketchesDescriptors[i]);
+
+  return R*result.t();
+}
+
+
+Mat Kernel::extractDescriptors(Mat image){
+  int w = image.cols, h=image.rows, size=32, delta=16;
+  Mat result, temp, img;
+  img = DoGFilter(image);
+  
+  for(int i=0;i<=w-size;i+=(size-delta)){
+    for(int j=0;j<=h-size;j+=(size-delta)){
+      calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
+      //normalize(temp,temp,1);
+      if(result.empty())
+	result = temp.t();
+      else
+	vconcat(result, temp.t(), result);
+    }
+  }
+  return result;
+} 
+
+double Kernel::cosineKernel(Mat x, Mat y){
   double result = 0;
   for (int i = 0; i < x.rows; i++)
     result += x.at<float>(i) * y.at<float>(i);

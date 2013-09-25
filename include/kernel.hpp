@@ -31,14 +31,16 @@ using namespace cv;
 class Kernel
 {
 private:
-  vector<Mat> trainingPhotos,	trainingSketches;
+  vector<Mat> trainingPhotos,	trainingSketches, trainingPhotosDescriptors, trainingSketchesDescriptors;
   Mat Kp, Kg, R;
 public:
   Kernel(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches);
   virtual ~Kernel();
   void compute();
-  Mat project(Mat& image);
-  double cosineKernel(Mat& x, Mat& y);  
+  Mat projectGallery(Mat image);
+  Mat projectProbe(Mat image);
+  Mat extractDescriptors(Mat img);
+  double cosineKernel(Mat x, Mat y);  
 };
 
 #endif // KERNEL_HPP
