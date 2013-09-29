@@ -33,7 +33,7 @@ Kernel::~Kernel()
 
 void Kernel::compute()
 {
-
+  
   int n = trainingPhotos.size();
   Kp = Mat::zeros(n,n,CV_32F);
   Kg = Mat::zeros(n,n,CV_32F);
@@ -49,32 +49,77 @@ void Kernel::compute()
       Kp.at<float>(i,j) = this->cosineKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
     }
     
-    R = Kg*((Kp).t()*Kp).inv()*(Kp).t();
-
+  R = Kg*((Kp).t()*Kp).inv()*(Kp).t();
+  
+  vector<int> _classes;
+  
+  T2.push_back(this->projectProbeIntern(trainingSketchesDescriptors[0]));
+  hconcat(T2,projectGalleryIntern(trainingPhotosDescriptors[0]),T2);
+  
+  for(int i=1; i<n; i++){
+    hconcat(T2,projectProbeIntern(trainingSketchesDescriptors[i]),T2);
+    hconcat(T2,projectGalleryIntern(trainingPhotosDescriptors[i]),T2);
+  }
+  
+  this->pca.computeVar(T2, Mat(), CV_PCA_DATA_AS_COL, 0.99);
+  
+  this->mean = pca.mean.clone();
+  
+  Mat T2_pca;
+  pca.project(T2, T2_pca);
+  
+  T2_pca = T2_pca.t();
+  
+  int nlda = T2_pca.rows/2;
+  nlda = (nlda%2)? nlda-1: nlda;
+  T2_pca = T2_pca.rowRange(0,nlda);
+  
+  cout << nlda << endl;
+  
+  for(int i=0; i<nlda/2; i++){  
+    _classes.push_back(i);
+    _classes.push_back(i);
+  }
+  
+  lda.compute(T2_pca, _classes);
+  
 }
 
-Mat Kernel::projectGallery(Mat image)
+Mat Kernel::projectGalleryIntern(Mat desc)
 {
-  Mat temp = extractDescriptors(image);
   int n = trainingPhotosDescriptors.size();
   Mat result = Mat::zeros(1,n,CV_32F);
   for(int i=0; i<n; i++)
-    result.at<float>(i) = this->cosineKernel(temp,trainingPhotosDescriptors[i]);
-  
+    result.at<float>(i) = this->cosineKernel(desc,trainingPhotosDescriptors[i]);
+   
   return result.t();
 }
 
-Mat Kernel::projectProbe(Mat image)
+Mat Kernel::projectProbeIntern(Mat desc)
 {
-  Mat temp = extractDescriptors(image);
   int n = trainingSketchesDescriptors.size();
   Mat result = Mat::zeros(1,n,CV_32F);
   for(int i=0; i<n; i++)
-    result.at<float>(i) = this->cosineKernel(temp,trainingSketchesDescriptors[i]);
-
+    result.at<float>(i) = this->cosineKernel(desc,trainingSketchesDescriptors[i]);
+  
   return R*result.t();
 }
 
+Mat Kernel::projectGallery(Mat image){
+  Mat desc = extractDescriptors(image);
+  Mat temp = lda.eigenvectors().t();
+  temp.convertTo(temp, CV_32F);
+  
+  return (temp*pca.eigenvectors)*(projectGalleryIntern(desc)-this->mean);
+}
+
+Mat Kernel::projectProbe(Mat image){
+  Mat desc = extractDescriptors(image);
+  Mat temp = lda.eigenvectors().t();
+  temp.convertTo(temp, CV_32F);
+  
+  return (temp*pca.eigenvectors)*(projectProbeIntern(desc)-this->mean);
+}
 
 Mat Kernel::extractDescriptors(Mat image){
   int w = image.cols, h=image.rows, size=32, delta=16;
@@ -100,5 +145,9 @@ double Kernel::cosineKernel(Mat x, Mat y){
     result += x.at<float>(i) * y.at<float>(i);
   
   result = result/(norm(x,NORM_L2)*norm(y,NORM_L2));
+  
+  if(result!=result)
+    cout << result << endl;
+  
   return result;
 }

@@ -32,15 +32,19 @@ class Kernel
 {
 private:
   vector<Mat> trainingPhotos,	trainingSketches, trainingPhotosDescriptors, trainingSketchesDescriptors;
-  Mat Kp, Kg, R;
+  Mat Kp, Kg, R, T2, mean;
+  Mat projectGalleryIntern(Mat image);
+  Mat projectProbeIntern(Mat image);
+  double cosineKernel(Mat x, Mat y);
 public:
+  PCA pca;
+  LDA lda;
   Kernel(vector<Mat>& trainingPhotos,vector<Mat>& trainingSketches);
   virtual ~Kernel();
   void compute();
   Mat projectGallery(Mat image);
   Mat projectProbe(Mat image);
-  Mat extractDescriptors(Mat img);
-  double cosineKernel(Mat x, Mat y);  
+  Mat extractDescriptors(Mat img);  
 };
 
 #endif // KERNEL_HPP

@@ -31,8 +31,8 @@ int main(int argc, char** argv){
   testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
   testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+10);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+10);
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+300);
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+300);
   
   vphotos.clear();
   vsketches.clear();
@@ -51,14 +51,32 @@ int main(int argc, char** argv){
   Kernel k(trainingPhotos, trainingSketches);
   
   k.compute();
+ 
   
-  cout << k.projectGallery(testingPhotos[53]) << endl;
-  cout << k.projectProbe(testingSketches[53]) << endl;
-  cout << endl;
-  cout << k.projectGallery(testingPhotos[1]) << endl;
-  cout << k.projectProbe(testingSketches[1]) << endl;
-  cout << endl;
-  cout << k.projectGallery(testingPhotos[100]) << endl;
-  cout << k.projectProbe(testingSketches[100]) << endl;
+  vector<int> rank(nTestingSketches);
+  
+  cerr << "calculating distances" << endl;
+  
+  for(int i=0; i<nTestingSketches; i++){
+    double val = norm(k.projectGallery(testingPhotos[i]),k.projectProbe(testingSketches[i]), NORM_L2);
+    cerr << "photo and sketch "<< i << " d1= "<< val << endl;
+    int temp = 0;
+    for(int j=0; j<nTestingPhotos; j++){
+      if(norm(k.projectGallery(testingPhotos[j]),k.projectProbe(testingSketches[i]), NORM_L2)<= val && i!=j){
+	cerr << "small "<< j << " d1= "<< norm(k.projectGallery(testingPhotos[j]),k.projectProbe(testingSketches[i]), NORM_L2) << endl;
+	temp++;
+      }
+    }
+    rank[i] = temp;
+    cerr << i << " rank= " << temp << endl;
+  }
+  
+  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
+  {
+    cerr << "Rank "<< i << ": ";
+    cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
+  }
+
+
   return 0;
 }
