@@ -16,30 +16,28 @@ using namespace std;
 int main(int argc, char** argv){
   
   vector<Mat> trainingPhotos,	trainingSketches,
-  testingPhotos,testingSketches;
+  testingPhotos,testingSketches, photos, sketches, extra;
   
-  vector<Mat> photos, sketches, extra, vphotos, vsketches;
-  
-  loadImages(argv[1],vphotos,1);
-  loadImages(argv[2],vsketches,1);
-  loadImages(argv[3],photos,1);
-  loadImages(argv[4],sketches,1);
+  loadImages(argv[1],photos,1);
+  loadImages(argv[2],sketches,1);
   //loadImages(argv[5],extra,1);
   
+  if(photos.size()!=sketches.size())
+    return -1;
   
-  testingPhotos.insert(testingPhotos.end(),photos.begin(),photos.end());
-  testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
-  testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
+  for(int i=0; i<photos.size()-2; i+=3){
+    trainingPhotos.push_back(photos[i]);
+    trainingPhotos.push_back(photos[i+1]);
+    testingPhotos.push_back(photos[i+2]);
+    trainingSketches.push_back(sketches[i]);
+    trainingSketches.push_back(sketches[i+1]);
+    testingSketches.push_back(sketches[i+2]);
+  }
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+300);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+300);
-  
-  vphotos.clear();
-  vsketches.clear();
   photos.clear();
   sketches.clear();
   extra.clear();
-  
+    
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
   nTraining = trainingPhotos.size();
@@ -57,13 +55,21 @@ int main(int argc, char** argv){
   
   cerr << "calculating distances" << endl;
   
+  vector<Mat> testingPhotosFinal(nTestingPhotos), testingSketchesFinal(nTestingSketches);
+  
+  for(int i=0; i<nTestingPhotos; i++)
+    testingPhotosFinal[i] = k.projectGallery(testingPhotos[i]);
+  
+  for(int i=0; i<nTestingSketches; i++)
+    testingSketchesFinal[i] = k.projectProbe(testingSketches[i]);
+  
   for(int i=0; i<nTestingSketches; i++){
-    double val = norm(k.projectGallery(testingPhotos[i]),k.projectProbe(testingSketches[i]), NORM_L2);
+    double val = norm(testingPhotosFinal[i],testingSketchesFinal[i], NORM_L2);
     cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
-      if(norm(k.projectGallery(testingPhotos[j]),k.projectProbe(testingSketches[i]), NORM_L2)<= val && i!=j){
-	cerr << "small "<< j << " d1= "<< norm(k.projectGallery(testingPhotos[j]),k.projectProbe(testingSketches[i]), NORM_L2) << endl;
+      if(norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2)<= val && i!=j){
+	cerr << "small "<< j << " d1= "<< norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2) << endl;
 	temp++;
       }
     }
