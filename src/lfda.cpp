@@ -126,6 +126,21 @@ void LFDA::compute()
     pca(Vk.t()*Yk,Mat(),CV_PCA_DATA_AS_COL,99);
     Mat Uk = pca.eigenvectors.t(); // Deveria ser (100x99)
     
+  /*  
+    LDA lda;
+    Mat temp = Wk.t()*Xk[i];
+    temp = temp.t();
+    vector<int> _classes;
+    for(int i=0; i<ncols; i++){
+      _classes.push_back(i);
+      _classes.push_back(i);
+    }
+    lda.compute(temp, _classes);
+    Mat temp2 = lda.eigenvectors();
+    temp2.convertTo(temp2, CV_32F);
+    Mat omega = (temp2*Wk.t()).t();
+  */
+  
     Mat omega = Wk*Vk*Uk; // Deveria ser (99x10920)
     
     /* cout << this->Xk.size() << endl <<

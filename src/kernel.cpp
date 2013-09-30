@@ -124,12 +124,15 @@ Mat Kernel::projectProbe(Mat image){
 Mat Kernel::extractDescriptors(Mat image){
   int w = image.cols, h=image.rows, size=32, delta=16;
   Mat result, temp, img;
-  img = DoGFilter(image);
+  //img = DoGFilter(image);
+  //img = CSDNFilter(image);
+  img = GaussianFilter(image);
   
   for(int i=0;i<=w-size;i+=(size-delta)){
     for(int j=0;j<=h-size;j+=(size-delta)){
-      calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
-      //normalize(temp,temp,1);
+      //calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
+      calcLBPHistogram(img(Rect(i,j,size,size)),temp);
+      normalize(temp,temp,1);
       if(result.empty())
 	result = temp.t();
       else
@@ -145,7 +148,7 @@ double Kernel::cosineKernel(Mat x, Mat y){
     result += x.at<float>(i) * y.at<float>(i);
   
   result = result/(norm(x,NORM_L2)*norm(y,NORM_L2));
-  
+  //result = result*result*result;
   if(result!=result)
     cout << result << endl;
   

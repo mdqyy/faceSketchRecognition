@@ -35,7 +35,6 @@ private:
   Mat Kp, Kg, R, T2, mean;
   Mat projectGalleryIntern(Mat image);
   Mat projectProbeIntern(Mat image);
-  double cosineKernel(Mat x, Mat y);
 public:
   PCA pca;
   LDA lda;
@@ -44,7 +43,8 @@ public:
   void compute();
   Mat projectGallery(Mat image);
   Mat projectProbe(Mat image);
-  Mat extractDescriptors(Mat img);  
+  Mat extractDescriptors(Mat img);
+  double cosineKernel(Mat x, Mat y);
 };
 
 #endif // KERNEL_HPP
