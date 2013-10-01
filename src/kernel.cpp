@@ -19,11 +19,11 @@
 
 #include "kernel.hpp"
 
-Kernel::Kernel(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches)
+Kernel::Kernel(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches, int patches)
 {
   this->trainingPhotos=trainingPhotos;
   this->trainingSketches=trainingSketches;
-  
+  this->patches = patches;
 }
 
 Kernel::~Kernel()
@@ -41,19 +41,19 @@ void Kernel::compute()
     trainingSketchesDescriptors.push_back(extractDescriptors(trainingSketches[i]));
   }
   
-  Kp = Mat::zeros(n/2,n/2,CV_64F);
-  Kg = Mat::zeros(n/2,n/2,CV_64F);
+  
+  //
+  Kp = Mat::zeros(n/2,n/2,CV_32F);
+  Kg = Mat::zeros(n/2,n/2,CV_32F);
   
   for(int i=0; i<n/2; i++)
     for(int j=0; j<n/2; j++){
-      Kg.at<double>(i,j) = this->cosineKernel(trainingPhotosDescriptors[i], trainingPhotosDescriptors[j]);
-      Kp.at<double>(i,j) = this->cosineKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
+      Kg.at<float>(i,j) = this->cosineKernel(trainingPhotosDescriptors[i], trainingPhotosDescriptors[j]);
+      Kp.at<float>(i,j) = this->cosineKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
     }
     
   R = Kg*((Kp).t()*Kp).inv()*(Kp).t();
-  
-  R.convertTo(R, CV_32F);
-  
+      
   vector<int> _classes;
   
   T2.push_back(this->projectProbeIntern(trainingSketchesDescriptors[0]));
@@ -84,7 +84,7 @@ void Kernel::compute()
   lda.compute(T2_pca, _classes);
   cout << lda.eigenvectors().size() << endl;
 }
-
+//
 Mat Kernel::projectGalleryIntern(Mat desc)
 {
   int n = trainingPhotosDescriptors.size();
@@ -124,33 +124,33 @@ Mat Kernel::projectProbe(Mat image){
 Mat Kernel::extractDescriptors(Mat image){
   int w = image.cols, h=image.rows, size=32, delta=16;
   Mat result, temp, img;
-  //img = DoGFilter(image);
+  img = DoGFilter(image);
   //img = CSDNFilter(image);
-  img = GaussianFilter(image);
-  
-  for(int i=0;i<=w-size;i+=(size-delta)){
-    for(int j=0;j<=h-size;j+=(size-delta)){
+  //img = GaussianFilter(image);
+  int i = (patches/14)*delta, j = (patches%14)*delta;
+  //for(int i=0;i<=w-size;i+=(size-delta)){
+    //for(int j=0;j<=h-size;j+=(size-delta)){
       //calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
       calcLBPHistogram(img(Rect(i,j,size,size)),temp);
       normalize(temp,temp,1);
-      if(result.empty())
+      //if(result.empty())
 	result = temp.t();
-      else
-	vconcat(result, temp.t(), result);
-    }
-  }
+      //else
+	//vconcat(result, temp.t(), result);
+    //}
+  //}
   return result;
 } 
 
-double Kernel::cosineKernel(Mat x, Mat y){
-  double result = 0;
+float Kernel::cosineKernel(Mat x, Mat y){
+  float result = 0;
   for (int i = 0; i < x.rows; i++)
     result += x.at<float>(i) * y.at<float>(i);
   
   result = result/(norm(x,NORM_L2)*norm(y,NORM_L2));
   //result = result*result*result;
   if(result!=result)
-    cout << result << endl;
+    result = 0;
   
   return result;
 }

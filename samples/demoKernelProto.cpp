@@ -28,16 +28,18 @@ int main(int argc, char** argv){
   for(int i=0; i<photos.size()-2; i+=3){
     trainingPhotos.push_back(photos[i]);
     trainingPhotos.push_back(photos[i+1]);
-    testingPhotos.push_back(photos[i+2]);
+    testingPhotos.push_back(photos[i]);
     trainingSketches.push_back(sketches[i]);
     trainingSketches.push_back(sketches[i+1]);
-    testingSketches.push_back(sketches[i+2]);
+    testingSketches.push_back(sketches[i]);
   }
+  
+  testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
   
   photos.clear();
   sketches.clear();
   extra.clear();
-    
+  
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
   nTraining = trainingPhotos.size();
@@ -46,25 +48,33 @@ int main(int argc, char** argv){
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
   
-  Kernel k(trainingPhotos, trainingSketches);
+  vector<Mat> testingPhotosFinal(nTestingPhotos), testingSketchesFinal(nTestingSketches);
   
-  k.compute();
- 
+  for(int patch=0; patch<154; patch++){
+    
+    Kernel k(trainingPhotos, trainingSketches, patch);
+    k.compute();
+    
+    cerr << "calculating patch " << patch <<  endl;
+    
+    for(int i=0; i<nTestingPhotos; i++)
+      if(patch==0)
+	testingPhotosFinal[i] = k.projectGallery(testingPhotos[i]);
+      else
+	vconcat(testingPhotosFinal[i], k.projectGallery(testingPhotos[i]), testingPhotosFinal[i]);
+    
+    for(int i=0; i<nTestingSketches; i++)
+      if(patch==0)
+	testingSketchesFinal[i] = k.projectProbe(testingSketches[i]);
+      else
+	vconcat(testingSketchesFinal[i], k.projectProbe(testingSketches[i]), testingSketchesFinal[i]);
+    
+  }
   
   vector<int> rank(nTestingSketches);
   
-  cerr << "calculating distances" << endl;
-  
-  vector<Mat> testingPhotosFinal(nTestingPhotos), testingSketchesFinal(nTestingSketches);
-  
-  for(int i=0; i<nTestingPhotos; i++)
-    testingPhotosFinal[i] = k.projectGallery(testingPhotos[i]);
-  
-  for(int i=0; i<nTestingSketches; i++)
-    testingSketchesFinal[i] = k.projectProbe(testingSketches[i]);
-  
   for(int i=0; i<nTestingSketches; i++){
-    double val = norm(testingPhotosFinal[i],testingSketchesFinal[i], NORM_L2);
+    float val = norm(testingPhotosFinal[i],testingSketchesFinal[i], NORM_L2);
     cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
@@ -82,7 +92,7 @@ int main(int argc, char** argv){
     cerr << "Rank "<< i << ": ";
     cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
   }
-
-
+  
+  
   return 0;
 }
