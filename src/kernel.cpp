@@ -19,11 +19,13 @@
 
 #include "kernel.hpp"
 
-Kernel::Kernel(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches, int patches)
+Kernel::Kernel(vector<Mat> &trainingPhotos, vector<Mat> &trainingSketches, int patches, string filter, string descriptor)
 {
-  this->trainingPhotos=trainingPhotos;
-  this->trainingSketches=trainingSketches;
+  this->trainingPhotos = trainingPhotos;
+  this->trainingSketches = trainingSketches;
   this->patches = patches;
+  this->filter = filter;
+  this->descriptor = descriptor;
 }
 
 Kernel::~Kernel()
@@ -41,15 +43,13 @@ void Kernel::compute()
     trainingSketchesDescriptors.push_back(extractDescriptors(trainingSketches[i]));
   }
   
-  
-  //
   Kp = Mat::zeros(n/2,n/2,CV_32F);
   Kg = Mat::zeros(n/2,n/2,CV_32F);
   
   for(int i=0; i<n/2; i++)
     for(int j=0; j<n/2; j++){
-      Kg.at<float>(i,j) = this->cosineKernel(trainingPhotosDescriptors[i], trainingPhotosDescriptors[j]);
-      Kp.at<float>(i,j) = this->cosineKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
+      Kg.at<float>(i,j) = this->calcKernel(trainingPhotosDescriptors[i], trainingPhotosDescriptors[j]);
+      Kp.at<float>(i,j) = this->calcKernel(trainingSketchesDescriptors[i],trainingSketchesDescriptors[j]);
     }
     
     R = Kg*((Kp).t()*Kp).inv()*(Kp).t();
@@ -70,30 +70,26 @@ void Kernel::compute()
   }
   
   this->pca.computeVar(T2, Mat(), CV_PCA_DATA_AS_COL, 0.99);
-  
   this->mean = pca.mean.clone();
-  cout << mean.size() << endl;
-  cout << pca.eigenvectors.size() << endl;
-  cout << T2.size() << endl;
-  
+  //cout << mean.size() << endl;
+  //cout << pca.eigenvectors.size() << endl;
+  //cout << T2.size() << endl;
   Mat T2_pca = pca.eigenvectors*T2;
   T2_pca = T2_pca.t();
-  
-  cout << T2_pca.size() << endl; 
-    
+  //cout << T2_pca.size() << endl; 
   lda.compute(T2_pca, _classes);
-  cout << lda.eigenvectors().size() << endl;
+  //cout << lda.eigenvectors().size() << endl;
 }
-//
+
 Mat Kernel::projectGalleryIntern(Mat desc)
 {
   int n = trainingPhotosDescriptors.size();
   Mat result = Mat::zeros(1,n/2,CV_32F);
   for(int i=0; i<n/2; i++)
-    result.at<float>(i) = this->cosineKernel(desc,trainingPhotosDescriptors[i]);
+    result.at<float>(i) = this->calcKernel(desc,trainingPhotosDescriptors[i]);
   
   //normalize(result,result,1,0,NORM_MINMAX, CV_32F);
-
+    
   return result.t();
 }
 
@@ -102,11 +98,11 @@ Mat Kernel::projectProbeIntern(Mat desc)
   int n = trainingSketchesDescriptors.size();
   Mat result = Mat::zeros(1,n/2,CV_32F);
   for(int i=0; i<n/2; i++)
-    result.at<float>(i) = this->cosineKernel(desc,trainingSketchesDescriptors[i]);
+    result.at<float>(i) = this->calcKernel(desc,trainingSketchesDescriptors[i]);
   
   result =  R*result.t();
   //normalize(result,result,1,0,NORM_MINMAX, CV_32F);
-
+  
   return result;
 }
 
@@ -129,26 +125,31 @@ Mat Kernel::projectProbe(Mat image){
 Mat Kernel::extractDescriptors(Mat image){
   int w = image.cols, h=image.rows, size=32, delta=16;
   Mat result, temp, img;
-  //img = image;
-  //img = DoGFilter(image);
-  //img = CSDNFilter(image);
-  img = GaussianFilter(image);
   int i = (patches/14)*delta, j = (patches%14)*delta;
-  //for(int i=0;i<=w-size;i+=(size-delta)){
-    //for(int j=0;j<=h-size;j+=(size-delta)){
-  //calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
-  calcLBPHistogram(img(Rect(i,j,size,size)),temp);
+  
+  if(filter=="DoG")
+    img = DoGFilter(image);
+  else if(filter=="CSDN")
+    img = CSDNFilter(image);
+  else if(filter=="Gaussian")
+    img = GaussianFilter(image);
+  else
+    img = image;
+  
+  if(descriptor=="SIFT")
+    calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
+  else if(descriptor=="MLBP")
+    calcLBPHistogram(img(Rect(i,j,size,size)),temp);
+  else
+    cerr << "Error, no descriptor choosed" << endl;
+  
   normalize(temp,temp,1);
-  //if(result.empty())
   result = temp.t();
-  //else
-  //vconcat(result, temp.t(), result);
-  //}
-  //}
+  
   return result;
 } 
 
-float Kernel::cosineKernel(Mat x, Mat y){
+float Kernel::calcKernel(Mat x, Mat y){
   float result = 0;
   for (int i = 0; i < x.rows; i++)
     result += x.at<float>(i) * y.at<float>(i);
@@ -157,6 +158,6 @@ float Kernel::cosineKernel(Mat x, Mat y){
   result = result*result*result;
   if(result!=result)
     result = 0;
-  
+    
   return result;
 }

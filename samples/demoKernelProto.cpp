@@ -48,10 +48,10 @@ int main(int argc, char** argv){
   
   for(int patch=0; patch<154; patch++){
     
-    Kernel k(trainingPhotos, trainingSketches, patch);
+    Kernel k(trainingPhotos, trainingSketches, patch, "CSDN", "SIFT");
     k.compute();
     
-    cerr << "calculating patch " << patch <<  endl;
+    //cerr << "calculating patch " << patch <<  endl;
     
     for(int i=0; i<nTestingPhotos; i++){
       Mat temp = k.projectGallery(testingPhotos[i]).clone();

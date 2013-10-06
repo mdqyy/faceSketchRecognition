@@ -38,25 +38,23 @@ int main(int argc, char** argv){
   
   vector<Mat> photos, sketches, extra, vphotos, vsketches;
   
-  loadImages(argv[1],vphotos,1);
-  loadImages(argv[2],vsketches,1);
-  loadImages(argv[3],photos,1);
-  loadImages(argv[4],sketches,1);
-  loadImages(argv[5],extra,1);
+  loadImages(argv[1],photos,1);
+  loadImages(argv[2],sketches,1);
+  //loadImages(argv[5],extra,1);
   
+  if(photos.size()!=sketches.size())
+    return -1;
   
-  testingPhotos.insert(testingPhotos.end(),photos.begin(),photos.end());
-  testingSketches.insert(testingSketches.end(),sketches.begin(),sketches.end());
-  testingPhotos.insert(testingPhotos.end(), extra.begin(), extra.end());
+  for(int i=383; i<photos.size()-2; i+=3){
+    trainingPhotos.push_back(photos[i]);
+    trainingPhotos.push_back(photos[i+1]);
+    testingPhotos.push_back(photos[i+2]);
+    trainingSketches.push_back(sketches[i]);
+    trainingSketches.push_back(sketches[i+1]);
+    testingSketches.push_back(sketches[i+2]);
+  }
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin()+250,vphotos.end());
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin()+250,vsketches.end());
-  
-  vphotos.clear();
-  vsketches.clear();
-  photos.clear();
-  sketches.clear();
-  extra.clear();
+  testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),

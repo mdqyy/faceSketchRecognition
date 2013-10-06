@@ -126,35 +126,8 @@ void LFDA::compute()
     pca(Vk.t()*Yk,Mat(),CV_PCA_DATA_AS_COL,99);
     Mat Uk = pca.eigenvectors.t(); // Deveria ser (100x99)
     
-  /*  
-    LDA lda;
-    Mat temp = Wk.t()*Xk[i];
-    temp = temp.t();
-    vector<int> _classes;
-    for(int i=0; i<ncols; i++){
-      _classes.push_back(i);
-      _classes.push_back(i);
-    }
-    lda.compute(temp, _classes);
-    Mat temp2 = lda.eigenvectors();
-    temp2.convertTo(temp2, CV_32F);
-    Mat omega = (temp2*Wk.t()).t();
-  */
-  
     Mat omega = Wk*Vk*Uk; // Deveria ser (99x10920)
     
-    /* cout << this->Xk.size() << endl <<
-     *    Xk[i].size() << endl <<
-     *    Yk.size() << endl <<
-     *    Wk.size() << endl <<
-     *    XXsk.size() << endl <<
-     *    XXk.size() << endl <<
-     *    VVk.size() << endl <<
-     *    valsDiag.size() << endl <<
-     *    Vk.size() << endl <<
-     *    Uk.size() << endl <<
-     *    omega.size() << endl;
-     */
     this->omegaK.push_back(omega);
   }
 }
@@ -181,9 +154,9 @@ vector<Mat> LFDA::extractDescriptors(Mat img, int size, int delta){
     for(int j=0;j<=h-size;j+=(size-delta)){
       Mat a, b;
       calcSIFTDescriptors(img(Rect(i,j,size,size)),a);
-      //normalize(a,a,1);
+      normalize(a,a,1);
       calcLBPHistogram(img(Rect(i,j,size,size)),b);
-      //normalize(b,b,1);
+      normalize(b,b,1);
       hconcat(a,b,temp);
       if(aux.empty())
 	aux = temp.clone();
