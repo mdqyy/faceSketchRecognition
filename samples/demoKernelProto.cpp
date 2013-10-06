@@ -25,20 +25,16 @@ int main(int argc, char** argv){
   if(photos.size()!=sketches.size())
     return -1;
   
-  for(int i=0; i<photos.size()-2; i+=3){
+  for(int i=383; i<photos.size()-2; i+=3){
     trainingPhotos.push_back(photos[i]);
     trainingPhotos.push_back(photos[i+1]);
-    testingPhotos.push_back(photos[i]);
+    testingPhotos.push_back(photos[i+2]);
     trainingSketches.push_back(sketches[i]);
     trainingSketches.push_back(sketches[i+1]);
-    testingSketches.push_back(sketches[i]);
+    testingSketches.push_back(sketches[i+2]);
   }
   
   testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
-  
-  photos.clear();
-  sketches.clear();
-  extra.clear();
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
@@ -57,18 +53,22 @@ int main(int argc, char** argv){
     
     cerr << "calculating patch " << patch <<  endl;
     
-    for(int i=0; i<nTestingPhotos; i++)
+    for(int i=0; i<nTestingPhotos; i++){
+      Mat temp = k.projectGallery(testingPhotos[i]).clone();
+      normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
       if(patch==0)
-	testingPhotosFinal[i] = k.projectGallery(testingPhotos[i]);
+	testingPhotosFinal[i] = temp;
       else
-	vconcat(testingPhotosFinal[i], k.projectGallery(testingPhotos[i]), testingPhotosFinal[i]);
-    
-    for(int i=0; i<nTestingSketches; i++)
+	vconcat(testingPhotosFinal[i], temp, testingPhotosFinal[i]);
+    }
+    for(int i=0; i<nTestingSketches; i++){
+      Mat temp = k.projectProbe(testingSketches[i]).clone();
+      normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
       if(patch==0)
-	testingSketchesFinal[i] = k.projectProbe(testingSketches[i]);
+	testingSketchesFinal[i] = temp;
       else
-	vconcat(testingSketchesFinal[i], k.projectProbe(testingSketches[i]), testingSketchesFinal[i]);
-    
+	vconcat(testingSketchesFinal[i], temp, testingSketchesFinal[i]);
+    }
   }
   
   vector<int> rank(nTestingSketches);
@@ -79,7 +79,7 @@ int main(int argc, char** argv){
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
       if(norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2)<= val && i!=j){
-	cerr << "small "<< j << " d1= "<< norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2) << endl;
+	//cerr << "small "<< j << " d1= "<< norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2) << endl;
 	temp++;
       }
     }
