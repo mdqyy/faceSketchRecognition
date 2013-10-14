@@ -118,4 +118,5 @@ void calcSIFTDescriptors(Mat src, Mat &descriptors){
 	descriptorExtractor->compute(src, keypoints, descriptors);
 	//cerr<<" descriptors.rows="<< descriptors.rows <<" keypoints.size()="
 	//		<<keypoints.size()<<" descriptors.cols=" << descriptors.cols << endl;
+	//cout << descriptors.size() << "  " << descriptors << endl;
 }

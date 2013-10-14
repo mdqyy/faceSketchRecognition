@@ -5,15 +5,15 @@ set(the_library "opencv_${name}")
 project(${the_library})
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
-    message("C++11 Activated")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
+	message("C++11 Activated")
 endif()
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    message("OpenMP Found") 
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	message("OpenMP Found") 
 endif()
 
 #set(OpenCV_DIR /home/marco/opencv-2.4.6.1)
@@ -43,7 +43,7 @@ target_link_libraries(${the_library} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 # add tests
 #---------------------------------
 if(NOT DEFINED ENABLE_TESTS)
-    set(ENABLE_TESTS FALSE CACHE BOOL "Enable to make the tests")
+	set(ENABLE_TESTS FALSE CACHE BOOL "Enable to make the tests")
 endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test AND ENABLE_TESTS)
@@ -62,14 +62,14 @@ endif()
 # add samples
 #---------------------------------
 if(NOT DEFINED ENABLE_SAMPLES)
-    set(ENABLE_SAMPLES FALSE CACHE BOOL "Enable to make the samples")
+	set(ENABLE_SAMPLES FALSE CACHE BOOL "Enable to make the samples")
 endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/samples AND ENABLE_SAMPLES) 
 	# probably there's a simpler way to link against multiple executables...
-    add_executable(demoKernelProto samples/demoKernelProto.cpp)
+	add_executable(demoKernelProto samples/demoKernelProto.cpp)
 	target_link_libraries(demoKernelProto ${the_library} ${OpenCV_LIBS})	
-    add_executable(demoLFDA samples/demoLFDA.cpp)
+	add_executable(demoLFDA samples/demoLFDA.cpp)
 	target_link_libraries(demoLFDA ${the_library} ${OpenCV_LIBS})	
 	add_executable(demoEigentransformation samples/demoEigentransformation.cpp)
 	target_link_libraries(demoEigentransformation ${the_library} ${OpenCV_LIBS})	
