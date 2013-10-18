@@ -134,7 +134,7 @@ Mat Kernel::extractDescriptors(Mat image){
   else if(filter=="Gaussian")
     img = GaussianFilter(image);
   else
-    img = image;
+    cerr << "Error, no filter choosed" << endl;
   
   if(descriptor=="SIFT")
     calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);

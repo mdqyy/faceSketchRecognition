@@ -38,21 +38,20 @@ int main(int argc, char** argv){
   
   vector<Mat> photos, sketches, extra, vphotos, vsketches;
   
-  loadImages(argv[1],photos,1);
-  loadImages(argv[2],sketches,1);
+  loadImages(argv[1],vphotos,1);
+  loadImages(argv[2],vsketches,1);
+  loadImages(argv[3],photos,1);
+  loadImages(argv[4],sketches,1);
   //loadImages(argv[5],extra,1);
   
   if(photos.size()!=sketches.size())
     return -1;
   
-  for(int i=383; i<photos.size()-2; i+=3){
-    trainingPhotos.push_back(photos[i]);
-    trainingPhotos.push_back(photos[i+1]);
-    testingPhotos.push_back(photos[i+2]);
-    trainingSketches.push_back(sketches[i]);
-    trainingSketches.push_back(sketches[i+1]);
-    testingSketches.push_back(sketches[i+2]);
-  }
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.end());
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.end());
+  
+  testingPhotos = photos;
+  testingSketches = sketches;
   
   testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
   
@@ -106,11 +105,11 @@ int main(int argc, char** argv){
   
   for(int i=0; i<nTestingSketches; i++){
     double val = norm(testingPhotosfinal[i],testingSketchesfinal[i], NORM_L2);
-    cerr << "photo and sketch "<< i << " d1= "<< val << endl;
+    //cerr << "photo and sketch "<< i << " d1= "<< val << endl;
     int temp = 0;
     for(int j=0; j<nTestingPhotos; j++){
       if(norm(testingPhotosfinal[j],testingSketchesfinal[i],NORM_L2)<= val && i!=j){
-	cerr << "small "<< j << " d1= "<< norm(testingPhotosfinal[j],testingSketchesfinal[i],NORM_L2) << endl;
+	//cerr << "small "<< j << " d1= "<< norm(testingPhotosfinal[j],testingSketchesfinal[i],NORM_L2) << endl;
 	temp++;
       }
     }
@@ -118,7 +117,7 @@ int main(int argc, char** argv){
     cerr << i << " rank= " << temp << endl;
   }
   
-  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50})
+  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100})
   {
     cerr << "Rank "<< i << ": ";
     cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
