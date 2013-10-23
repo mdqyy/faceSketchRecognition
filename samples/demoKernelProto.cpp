@@ -17,7 +17,7 @@ int main(int argc, char** argv){
   
   vector<Mat> trainingPhotos,	trainingSketches,
   testingPhotos,testingSketches, photos, sketches, extra;
-  
+    
   loadImages(argv[1],photos,1);
   loadImages(argv[2],sketches,1);
   //loadImages(argv[5],extra,1);
@@ -52,12 +52,13 @@ int main(int argc, char** argv){
 	
 	Kernel k(trainingPhotos, trainingSketches, patch, filter, desc);
 	k.compute();
-	
+	float weight = 1-sqrt(pow<double>((patch%14-6)+(patch/14-5),2))/(2*sqrt(74));
 	//cerr << "calculating patch " << patch <<  endl;
 	
 	for(int i=0; i<nTestingPhotos; i++){
 	  Mat temp = k.projectGallery(testingPhotos[i]).clone();
 	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
+	  temp = temp*weight;
 	  if(testingPhotosFinal[i].empty())
 	    testingPhotosFinal[i] = temp;
 	  else
@@ -67,6 +68,7 @@ int main(int argc, char** argv){
 	for(int i=0; i<nTestingSketches; i++){
 	  Mat temp = k.projectProbe(testingSketches[i]).clone();
 	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
+	  temp = temp*weight;
 	  if(testingSketchesFinal[i].empty())
 	    testingSketchesFinal[i] = temp;
 	  else
@@ -76,6 +78,30 @@ int main(int argc, char** argv){
     }
   }
   
+  vector<int> rank(nTestingSketches);
+  
+  for(int i=0; i<nTestingSketches; i++){
+    float val = norm(testingPhotosFinal[i],testingSketchesFinal[i], NORM_L2);
+    cerr << "photo and sketch "<< i << " d1= "<< val << endl;
+    int temp = 0;
+    for(int j=0; j<nTestingPhotos; j++){
+      if(norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2)<= val && i!=j){
+	cerr << "small "<< j << " d1= "<< norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2) << endl;
+	temp++;
+      }
+    }
+    rank[i] = temp;
+    cerr << i << " rank= " << temp << endl;
+  }
+  
+  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100})
+  {
+    cerr << "Rank "<< i << ": ";
+    cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
+  }
+  
+  cerr << "------------------------------------------------------" << endl;
+   
   // Set up training data
   Mat labelsMat;
   Mat svmTrainingtemp;
@@ -149,30 +175,6 @@ int main(int argc, char** argv){
     cerr << "Rank "<< i << ": ";
     cerr << "d1= " << (float)count_if(rankSVM.begin(), rankSVM.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
   }
-  
-  cerr << "------------------------------------------------------" << endl;
-  vector<int> rank(nTestingSketches);
-  
-  for(int i=0; i<nTestingSketches; i++){
-    float val = norm(testingPhotosFinal[i],testingSketchesFinal[i], NORM_L2);
-    cerr << "photo and sketch "<< i << " d1= "<< val << endl;
-    int temp = 0;
-    for(int j=0; j<nTestingPhotos; j++){
-      if(norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2)<= val && i!=j){
-	cerr << "small "<< j << " d1= "<< norm(testingPhotosFinal[j],testingSketchesFinal[i], NORM_L2) << endl;
-	temp++;
-      }
-    }
-    rank[i] = temp;
-    cerr << i << " rank= " << temp << endl;
-  }
-  
-  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100})
-  {
-    cerr << "Rank "<< i << ": ";
-    cerr << "d1= " << (float)count_if(rank.begin(), rank.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
-  }
-  
-  
+   
   return 0;
 }
