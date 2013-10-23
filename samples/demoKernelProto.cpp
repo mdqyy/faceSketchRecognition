@@ -16,7 +16,7 @@ using namespace std;
 int main(int argc, char** argv){
   
   vector<Mat> trainingPhotos,	trainingSketches,
-  testingPhotos,testingSketches, svmTrainingPhotos,svmTrainingSketches, photos, sketches, extra;
+  testingPhotos,testingSketches, photos, sketches, extra;
   
   loadImages(argv[1],photos,1);
   loadImages(argv[2],sketches,1);
@@ -25,32 +25,26 @@ int main(int argc, char** argv){
   if(photos.size()!=sketches.size())
     return -1;
   
-  for(int i=383; i<photos.size()-3; i+=4){
+  for(int i=383; i<photos.size()-2; i+=3){
     trainingPhotos.push_back(photos[i]);
     trainingPhotos.push_back(photos[i+1]);
     testingPhotos.push_back(photos[i+2]);
     trainingSketches.push_back(sketches[i]);
     trainingSketches.push_back(sketches[i+1]);
     testingSketches.push_back(sketches[i+2]);
-    
-    svmTrainingPhotos.push_back(photos[i+3]);
-    svmTrainingSketches.push_back(sketches[i+3]);
   }
-  
   
   testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),
-  nTraining = trainingPhotos.size(),
-  nSVMTraining = svmTrainingPhotos.size() < 50 ? svmTrainingPhotos.size() : 50;
+  nTraining = trainingPhotos.size();
   
   cerr << nTraining << " pares para treinamento." << endl;
   cerr << nTestingSketches << " sketches para reconhecimento." << endl;
   cerr << nTestingPhotos << " fotos na galeria." << endl;
   
-  vector<Mat> testingPhotosFinal(nTestingPhotos), testingSketchesFinal(nTestingSketches), 
-  svmTrainingPhotosFinal(nSVMTraining), svmTrainingSketchesFinal(nSVMTraining);
+  vector<Mat> testingPhotosFinal(nTestingPhotos), testingSketchesFinal(nTestingSketches);
   
   for(string filter : {"Gaussian", "DoG", "CSDN"}){
     for(string desc : {"SIFT", "MLBP"}){
@@ -78,24 +72,6 @@ int main(int argc, char** argv){
 	  else
 	    vconcat(testingSketchesFinal[i], temp, testingSketchesFinal[i]);
 	}
-	
-	for(int i=0; i<nSVMTraining; i++){
-	  Mat temp = k.projectGallery(svmTrainingPhotos[i]).clone();
-	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
-	  if(svmTrainingPhotosFinal[i].empty())
-	    svmTrainingPhotosFinal[i] = temp;
-	  else
-	    vconcat(svmTrainingPhotosFinal[i], temp, svmTrainingPhotosFinal[i]);
-	}
-	
-	for(int i=0; i<nSVMTraining; i++){
-	  Mat temp = k.projectProbe(svmTrainingSketches[i]).clone();
-	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
-	  if(svmTrainingSketchesFinal[i].empty())
-	    svmTrainingSketchesFinal[i] = temp;
-	  else
-	    vconcat(svmTrainingSketchesFinal[i], temp, svmTrainingSketchesFinal[i]);
-	}
       }  
     }
   }
@@ -103,22 +79,22 @@ int main(int argc, char** argv){
   // Set up training data
   Mat labelsMat;
   Mat svmTrainingtemp;
-  svmTrainingtemp =  svmTrainingPhotosFinal[0]-svmTrainingSketchesFinal[0];
+  svmTrainingtemp =  Mat::zeros(1,1,CV_32F); //Editar essa parte
   normalize(svmTrainingtemp,svmTrainingtemp,1,0,NORM_MINMAX, CV_32F);
   Mat trainingDataMat = svmTrainingtemp;
   labelsMat.push_back<float>(1);
   
-  for(int i=1; i<nSVMTraining; i++){
-    svmTrainingtemp =  svmTrainingPhotosFinal[i]-svmTrainingSketchesFinal[i];
+  for(int i=1; i<100; i++){
+    svmTrainingtemp =  Mat::zeros(1,1,CV_32F); //Editar essa parte
     normalize(svmTrainingtemp,svmTrainingtemp,1,0,NORM_MINMAX, CV_32F);
     hconcat(trainingDataMat,svmTrainingtemp,trainingDataMat);
     labelsMat.push_back<float>(1);
   }
   
-  for(int i=0; i<nSVMTraining; i++){
-    for(int j=0; j<nSVMTraining; j++){
+  for(int i=0; i<100; i++){
+    for(int j=0; j<100; j++){
       if(i!=j){
-	svmTrainingtemp =  svmTrainingPhotosFinal[i]-svmTrainingSketchesFinal[j];
+	svmTrainingtemp =  Mat::zeros(1,1,CV_32F); //Editar essa parte
 	normalize(svmTrainingtemp,svmTrainingtemp,1,0,NORM_MINMAX, CV_32F);
 	hconcat(trainingDataMat,svmTrainingtemp,trainingDataMat);
 	labelsMat.push_back<float>(-1);

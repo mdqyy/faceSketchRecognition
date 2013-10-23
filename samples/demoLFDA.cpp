@@ -40,18 +40,18 @@ int main(int argc, char** argv){
   
   loadImages(argv[1],vphotos,1);
   loadImages(argv[2],vsketches,1);
-  loadImages(argv[3],photos,1);
-  loadImages(argv[4],sketches,1);
+  //loadImages(argv[3],photos,1);
+  //loadImages(argv[4],sketches,1);
   //loadImages(argv[5],extra,1);
   
   if(photos.size()!=sketches.size())
     return -1;
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.end());
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.end());
+  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+300);
+  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+300);
   
-  testingPhotos = photos;
-  testingSketches = sketches;
+  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+300,vphotos.end());
+  testingSketches.insert(testingSketches.end(),vsketches.begin()+300,vsketches.end());
   
   testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
   
