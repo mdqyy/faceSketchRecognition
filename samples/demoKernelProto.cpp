@@ -25,13 +25,11 @@ int main(int argc, char** argv){
   if(photos.size()!=sketches.size())
     return -1;
   
-  for(int i=383; i<photos.size()-2; i+=3){
+  for(int i=0; i<photos.size()-1; i+=2){
     trainingPhotos.push_back(photos[i]);
-    trainingPhotos.push_back(photos[i+1]);
-    testingPhotos.push_back(photos[i+2]);
+    testingPhotos.push_back(photos[i+1]);
     trainingSketches.push_back(sketches[i]);
-    trainingSketches.push_back(sketches[i+1]);
-    testingSketches.push_back(sketches[i+2]);
+    testingSketches.push_back(sketches[i+1]);
   }
   
   testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
@@ -52,13 +50,11 @@ int main(int argc, char** argv){
 	
 	Kernel k(trainingPhotos, trainingSketches, patch, filter, desc);
 	k.compute();
-	float weight = 1-sqrt(pow<double>((patch%14-6)+(patch/14-5),2))/(2*sqrt(74));
 	//cerr << "calculating patch " << patch <<  endl;
 	
 	for(int i=0; i<nTestingPhotos; i++){
 	  Mat temp = k.projectGallery(testingPhotos[i]).clone();
 	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
-	  temp = temp*weight;
 	  if(testingPhotosFinal[i].empty())
 	    testingPhotosFinal[i] = temp;
 	  else
@@ -68,7 +64,6 @@ int main(int argc, char** argv){
 	for(int i=0; i<nTestingSketches; i++){
 	  Mat temp = k.projectProbe(testingSketches[i]).clone();
 	  normalize(temp,temp,1,0,NORM_MINMAX, CV_32F);
-	  temp = temp*weight;
 	  if(testingSketchesFinal[i].empty())
 	    testingSketchesFinal[i] = temp;
 	  else
@@ -128,53 +123,5 @@ int main(int argc, char** argv){
     }
   }
   
-  trainingDataMat = trainingDataMat.t();
-  
-  // Set up SVM's parameters
-  CvSVMParams params;
-  
-  params.svm_type = CvSVM::C_SVC;
-  params.kernel_type = CvSVM::POLY; //CvSVM::RBF, CvSVM::LINEAR ...
-  params.degree = 3.0; // for poly
-  params.gamma = 10.0; // for poly/rbf/sigmoid
-  params.coef0 = 0; // for poly/sigmoid
-  
-  params.C = 1; // for CV_SVM_C_SVC, CV_SVM_EPS_SVR and CV_SVM_NU_SVR
-  params.nu = 0.0; // for CV_SVM_NU_SVC, CV_SVM_ONE_CLASS, and CV_SVM_NU_SVR
-  params.p = 0.0; // for CV_SVM_EPS_SVR
-  
-  params.class_weights = NULL; // for CV_SVM_C_SVC
-  
-  params.term_crit.type = CV_TERMCRIT_ITER +CV_TERMCRIT_EPS;
-  params.term_crit.max_iter = 1000;
-  params.term_crit.epsilon = 1e-6;  
-  
-  // Train the SVM
-  CvSVM SVM;
-  SVM.train(trainingDataMat, labelsMat, Mat(), Mat(), params);
-  
-  
-  vector<int> rankSVM(nTestingSketches);
-  
-  for(int i=0; i<nTestingSketches; i++){
-    float val = SVM.predict(Mat(testingPhotosFinal[i]-testingSketchesFinal[i]), true);
-    cerr << "photo and sketch "<< i << " d1= "<< val << endl;
-    int temp = 0;
-    for(int j=0; j<nTestingPhotos; j++){
-      if(SVM.predict(Mat(testingPhotosFinal[j]-testingSketchesFinal[i]), true)<= val && i!=j){
-	cerr << "small "<< j << " d1= "<< SVM.predict(Mat(testingPhotosFinal[j]-testingSketchesFinal[i]), true) << endl;
-	temp++;
-      }
-    }
-    rankSVM[i] = temp;
-    cerr << i << " rank= " << temp << endl;
-  }
-  
-  for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100})
-  {
-    cerr << "Rank "<< i << ": ";
-    cerr << "d1= " << (float)count_if(rankSVM.begin(), rankSVM.end(), [i](int x) {return x < i;})/nTestingSketches << endl;
-  }
-   
   return 0;
 }

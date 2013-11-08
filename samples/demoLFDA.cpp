@@ -44,16 +44,15 @@ int main(int argc, char** argv){
   //loadImages(argv[4],sketches,1);
   //loadImages(argv[5],extra,1);
   
-  if(photos.size()!=sketches.size())
+  if(vphotos.size()!=vsketches.size())
     return -1;
   
-  trainingPhotos.insert(trainingPhotos.end(),vphotos.begin(),vphotos.begin()+300);
-  trainingSketches.insert(trainingSketches.end(),vsketches.begin(),vsketches.begin()+300);
-  
-  testingPhotos.insert(testingPhotos.end(),vphotos.begin()+300,vphotos.end());
-  testingSketches.insert(testingSketches.end(),vsketches.begin()+300,vsketches.end());
-  
-  testingPhotos.insert(testingPhotos.end(),extra.begin(),extra.end());
+  for(int i=0; i<vphotos.size()-1; i+=2){
+    trainingPhotos.push_back(vphotos[i]);
+    testingPhotos.push_back(vphotos[i+1]);
+    trainingSketches.push_back(vsketches[i]);
+    testingSketches.push_back(vsketches[i+1]);
+  }
   
   int nTestingSketches = testingSketches.size(),
   nTestingPhotos = testingPhotos.size(),

@@ -136,10 +136,14 @@ Mat Kernel::extractDescriptors(Mat image){
   else
     cerr << "Error, no filter choosed" << endl;
   
+  img = img(Rect(i,j,size,size));
+  //img.convertTo(img, CV_32F); // Retirar isso depois
+  //dct(img,img);			// Isso tambem
+  
   if(descriptor=="SIFT")
-    calcSIFTDescriptors(img(Rect(i,j,size,size)),temp);
+    calcSIFTDescriptors(img,temp);
   else if(descriptor=="MLBP")
-    calcLBPHistogram(img(Rect(i,j,size,size)),temp);
+    calcLBPHistogram(img,temp);
   else
     cerr << "Error, no descriptor choosed" << endl;
   
