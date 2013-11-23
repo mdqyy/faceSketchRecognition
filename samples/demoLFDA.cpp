@@ -1,10 +1,3 @@
-/*
- * Test.cpp
- *
- *  Created on: 08/12/2012
- *      Author: marco
- */
-
 #include <iostream>
 #include <vector>
 #include <algorithm>

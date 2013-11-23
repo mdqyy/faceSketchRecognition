@@ -1,10 +1,3 @@
-/*
- * utils.cpp
- *
- *  Created on: 29/01/2013
- *      Author: marco
- */
-
 #include "utils.hpp"
 
 void loadImages(string src, vector<Mat> &dest, float proportion){

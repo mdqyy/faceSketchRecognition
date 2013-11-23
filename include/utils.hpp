@@ -1,12 +1,5 @@
-/*
- * utils.hpp
- *
- *  Created on: 29/01/2013
- *      Author: marco
- */
-
-#ifndef UTILS_HPP_
-#define UTILS_HPP_
+#ifndef __UTILS_HPP__
+#define __UTILS_HPP__
 
 #include <iostream>
 #include <vector>
@@ -27,4 +20,4 @@ void createFolds(vector<Mat>&, vector<vector<Mat> >&, int);
 float euclideanDistance(Mat, Mat);
 void patcher(Mat, int, int, vector<vector<Mat> >&);
 
-#endif /* UTILS_HPP_ */
+#endif

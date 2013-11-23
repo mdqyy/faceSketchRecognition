@@ -1,5 +1,4 @@
 #include "descriptors.hpp"
-//#include "helper.hpp"
 
 int  UniformPattern59[256] = {
 		1,   2,   3,   4,   5,   0,   6,   7,   8,   0,   0,   0,   9,   0,  10,  11,

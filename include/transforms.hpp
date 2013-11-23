@@ -1,5 +1,5 @@
-#ifndef __FILTERS_HPP__
-#define __FILTERS_HPP__
+#ifndef __TRANSFORMS_HPP__
+#define __TRANSFORMS_HPP__
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -8,8 +8,6 @@
 
 using namespace cv;
 
-Mat DoGFilter(Mat);
-Mat GaussianFilter(Mat);
-Mat CSDNFilter(Mat);
+Mat radonTransform(Mat);
 
 #endif
